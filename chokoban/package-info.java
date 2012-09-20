@@ -1,0 +1,8 @@
+/**
+ * 
+ */
+/**
+ * @author Jeppe
+ *
+ */
+package chokoban;
