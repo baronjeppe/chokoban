@@ -40,8 +40,12 @@ public class MapAgent extends Agent {
 		else {
 			// Make the agent terminate
 			System.out.println("No arguments was passed");
-			doDelete();
+			//doDelete();
 		}
+		
+		Viewer viewer = new Viewer();
+		
+		viewer.drawMap();
 	}
 
 	// Put agent clean-up operations here
