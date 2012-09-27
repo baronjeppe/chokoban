@@ -23,15 +23,30 @@ Boston, MA  02111-1307, USA.
 
 package map;
 
+import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+
 import jade.core.Agent;
 
+
+
 public class MapAgent extends Agent {
+	
+	private static final int PATH_SIZE = 12;
+	private static final int FIGURE_SIZES = 32;
+	private int MAP_HEIGHT = 0;
+	private int MAP_WIDTH = 0;
+	private int NO_OF_GOALS = 0;
+	private int[][] map;
 
 	// Put agent initializations here
 	protected void setup() {
 		// Printout a welcome message
 		System.out.println("Hallo! BoxAgent " + getAID().getName() + " is running.");
 
+		
 		// Loading arguments
 		Object[] args = getArguments();
 		if (args != null && args.length > 0) {
@@ -43,9 +58,111 @@ public class MapAgent extends Agent {
 			//doDelete();
 		}
 		
-		Viewer viewer = new Viewer();
 		
-		viewer.drawMap();
+		map = loader();
+		
+		Viewer viewer = new Viewer(MAP_WIDTH, MAP_HEIGHT);
+		
+		viewer.drawMap(map);
+	}
+	
+	private int[][] emptyMap(int[][] mapIn){
+		for(int i = 0 ; i < mapIn.length; i++)
+			for(int j = 0; j < mapIn[0].length; j++)
+				mapIn[i][j] = 0;
+		return mapIn;
+	}
+	
+	private int[][] loader(){
+		
+		int[][] path = new int[0][0];
+		
+		try{
+			  // Open the file that is the first 
+			  // command line parameter
+			  FileInputStream fstream = new FileInputStream("map/mymap.txt");
+			  // Get the object of DataInputStream
+			  DataInputStream in = new DataInputStream(fstream);
+			  BufferedReader br = new BufferedReader(new InputStreamReader(in));
+			  String strLine;
+			  strLine = br.readLine();
+			  
+			    // Do something to the map specs
+			  String temp = new String();
+			  int k = 0;
+			  while(strLine.charAt(k) != ' '){
+				  temp += strLine.substring(k,k+1);
+				  k++;
+			  }
+			  MAP_WIDTH = Integer.parseInt(temp);
+			  k++;
+			  temp = "";
+			  while(strLine.charAt(k) != ' '){
+				  temp += strLine.substring(k,k+1);
+				  k++;
+			  }
+			  k++;
+			  MAP_HEIGHT = Integer.parseInt(temp);
+			  temp = "";
+			  
+			  while(strLine.charAt(k) != ' '){
+				  temp += strLine.substring(k,k+1);
+				  k++;
+			  }
+			  NO_OF_GOALS = Integer.parseInt(temp);
+				  
+			  
+			  
+			  path = new int[MAP_WIDTH][MAP_HEIGHT];
+			  path = emptyMap(path);
+			  
+			  int j = 0;
+			  //Read File Line By Line
+			  int solvers = 10;
+			  int boxes = 1000;
+			  int goals = 100;
+			  
+			  while ((strLine = br.readLine()) != null)   {
+				  // Print the content on the console
+				 // System.out.println (strLine);
+				  for( int i = 0 ; i < strLine.length()  ; i++){
+					  switch (strLine.charAt(i)) {
+					case 'X':
+					case 'x':
+						path[i][j] = 1;
+						break;
+						  
+					case '.':
+						path[i][j] = 2;
+						break;
+						
+					case 'M':
+					case 'm':
+						path[i][j] = solvers++;
+						break;
+						
+					case 'G':
+					case 'g':
+						path[i][j] = goals++;
+						break;
+						
+					case 'J':
+					case 'j':
+						path[i][j] = boxes++;
+						break;
+						
+					default:
+						break;
+					}
+				  }
+				  j++;
+			  }
+			  //Close the input stream
+			  in.close();
+			    }catch (Exception e){//Catch exception if any
+			  System.err.println("Error: " + e.getMessage());
+			  }
+		return path;
 	}
 
 	// Put agent clean-up operations here

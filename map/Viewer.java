@@ -45,56 +45,60 @@ import javax.swing.JFrame;
 
 public class Viewer {
 	
-	public static final int PATH_SIZE = 12;
-	public static final int FIGURE_SIZES = 32;
-	public static final int MAP_HEIGHT = PATH_SIZE * FIGURE_SIZES;
-	public static final int MAP_WIDTH =  PATH_SIZE * FIGURE_SIZES;
+
+	private static final int FIGURE_SIZES = 32;
+	
 	private final JFrame frame  = new JFrame();;
 	
-	private int[][] map = new int[PATH_SIZE][PATH_SIZE];
-	
-		
-	public Viewer(){
-		map = loader();
+	public Viewer(int map_width, int map_height){
 
-		frame.setSize(MAP_WIDTH,MAP_HEIGHT);
+		frame.setSize((1+map_width)*FIGURE_SIZES-16,(1+map_height)*FIGURE_SIZES+6);
 		
 		Color c = new Color(0,0,0);
 		frame.getContentPane().setBackground(c);
-	
-		drawMap();
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	}
 	
-	public void drawMap(){
+	public void drawMap(int[][] map){
 		frame.getContentPane().removeAll();
 		frame.revalidate();
 		frame.repaint();
-		drawMapPriv();
+		drawMapPriv(map);
 	}
-	
-	private int[][] emptyMap(int[][] mapIn){
-		for(int i = 0 ; i < PATH_SIZE; i++)
-			for(int j = 0; j < PATH_SIZE; j++)
-				mapIn[i][j] = 0;
-		return mapIn;
-	}
-	
-	private void drawMapPriv(){
-		for(int i = 0; i < PATH_SIZE; i++){
-			for(int j = 0; j < PATH_SIZE; j++){
+
+	private void drawMapPriv(int[][] map){
+		printMap(map);
+		for(int i = 0; i < map.length; i++){
+			for(int j = 0; j < map[0].length; j++){
+				if(map[i][j] == 1)
+					drawWall(i*FIGURE_SIZES, j*FIGURE_SIZES);
+				
+				else if(map[i][j] == 2)
+					drawBackground(i*FIGURE_SIZES, j*FIGURE_SIZES);
+				
+				else if(map[i][j] >= 10 && map[i][j] <= 99)
+					drawSolver(i*FIGURE_SIZES, j*FIGURE_SIZES);
+				
+				else if(map[i][j] >= 100 && map[i][j] <= 999)
+					drawGoal(i*FIGURE_SIZES, j*FIGURE_SIZES);
+				
+				else if(map[i][j] >= 1000 && map[i][j] <= 9999 )
+					drawBox(i*FIGURE_SIZES, j*FIGURE_SIZES);
+				
+
+				/*
 				switch (map[i][j]) {
-				case 88:
+				case 1:
 					drawWall(i*FIGURE_SIZES, j*FIGURE_SIZES);
 					break;
 					
-				case 46:
+				case 2:
 					drawBackground(i*FIGURE_SIZES, j*FIGURE_SIZES);
 					break;
 					
-				case 71:
+				case :
 					drawGoal(i*FIGURE_SIZES, j*FIGURE_SIZES);
 					break;
 					
@@ -108,55 +112,19 @@ public class Viewer {
 
 				default:
 					break;
-				}
+				}*/
 			}
 		}
 	}
 	
 	private void printMap(int[][] map){
-		for(int i = 0 ; i < PATH_SIZE; i++){
-			for(int j = 0; j < PATH_SIZE; j++)
+		for(int i = 0 ; i < map[0].length ; i++){
+			for(int j = 0; j < map.length ; j++)
 				System.out.print(map[j][i] + " ");
 			System.out.println();
 		}
 	}
 	
-	private int[][] loader(){
-		int[][] path = new int[PATH_SIZE][PATH_SIZE];
-		path = emptyMap(path);
-		
-		try{
-			  // Open the file that is the first 
-			  // command line parameter
-			  FileInputStream fstream = new FileInputStream("C:/Users/superthomz/Favorites/Documents/GitHub/chokoban/map/mymap.txt");
-			  // Get the object of DataInputStream
-			  DataInputStream in = new DataInputStream(fstream);
-			  BufferedReader br = new BufferedReader(new InputStreamReader(in));
-			  String strLine;
-			  strLine = br.readLine();
-			  
-			    // Do something to the map specs
-			  for(int i = 0; i < strLine.length(); i++){
-				  
-			  }
-			  int j = 0;
-			  //Read File Line By Line
-			  while ((strLine = br.readLine()) != null)   {
-				  // Print the content on the console
-				 // System.out.println (strLine);
-				  for( int i = 0 ; i < strLine.length()  ; i++){
-					  path[i][j] = (int)strLine.charAt(i);
-				  }
-				  j++;
-			  }
-			  //Close the input stream
-			  in.close();
-			    }catch (Exception e){//Catch exception if any
-			  System.err.println("Error: " + e.getMessage());
-			  }
-		printMap(path);
-		return path;
-	}
 
 	private void drawBox(int x, int y){
 		ShowBox panel = new ShowBox(x,y);

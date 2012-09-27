@@ -18,7 +18,6 @@ public class ShowWall extends JComponent {
 		try {
 		
 		String imageName= "map/wall.jpg";
-		System.out.println(System.getProperty("user.dir"));
 		File input = new File(imageName);
 		image = ImageIO.read(input);
 		} catch (IOException ie) {
