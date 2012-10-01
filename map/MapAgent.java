@@ -87,31 +87,20 @@ public class MapAgent extends Agent {
 			  String strLine;
 			  strLine = br.readLine();
 			  
-			    // Do something to the map specs
-			  String temp = new String();
-			  int k = 0;
-			  while(strLine.charAt(k) != ' '){
-				  temp += strLine.substring(k,k+1);
-				  k++;
+			  // Do something to the map specs
+			  String delimiter = " ";
+			  String[] temp = strLine.split(delimiter);
+			 
+			  if (temp.length == 3)
+			  {
+				  MAP_WIDTH = Integer.parseInt(temp[0]);
+				  MAP_HEIGHT = Integer.parseInt(temp[1]);
+				  NO_OF_GOALS = Integer.parseInt(temp[2]);				  
 			  }
-			  MAP_WIDTH = Integer.parseInt(temp);
-			  k++;
-			  temp = "";
-			  while(strLine.charAt(k) != ' '){
-				  temp += strLine.substring(k,k+1);
-				  k++;
-			  }
-			  k++;
-			  MAP_HEIGHT = Integer.parseInt(temp);
-			  temp = "";
-			  
-			  while(strLine.charAt(k) != ' '){
-				  temp += strLine.substring(k,k+1);
-				  k++;
-			  }
-			  NO_OF_GOALS = Integer.parseInt(temp);
-				  
-			  
+			  else
+				  System.out.println("ERROR: Map specs has wrong format");
+
+
 			  
 			  path = new int[MAP_WIDTH][MAP_HEIGHT];
 			  path = emptyMap(path);
