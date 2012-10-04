@@ -23,9 +23,24 @@ Boston, MA  02111-1307, USA.
 
 package goal;
 
+import map.Map;
+import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.CyclicBehaviour;
+import jade.core.behaviours.OneShotBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.lang.acl.UnreadableException;
 
 public class GoalAgent extends Agent {
+
+	private int id;
+	private AID mapAgent;
+	private Map map;
 
 	// Put agent initializations here
 	protected void setup() {
@@ -35,7 +50,41 @@ public class GoalAgent extends Agent {
 		// Loading arguments
 		Object[] args = getArguments();
 		if (args != null && args.length > 0) {
-
+			id = (int) args[0];
+			
+			addBehaviour(new MapSubscriber());
+			
+			// Find map-agent and subscriber to map
+			addBehaviour(new OneShotBehaviour(this) {
+				public void action() {
+					//System.out.println("Requesting MapAgent");
+					// find the map agent
+					DFAgentDescription template = new DFAgentDescription();
+					ServiceDescription sd = new ServiceDescription();
+					sd.setType("map");
+					template.addServices(sd);
+					try {
+						DFAgentDescription[] result = DFService.search(myAgent, template); 
+						if (result.length > 0)
+						{
+							mapAgent = result[0].getName();
+							ACLMessage sub = new ACLMessage(ACLMessage.SUBSCRIBE);
+							sub.addReceiver(mapAgent);
+							sub.setContent("subscribe_to_map");
+							sub.setConversationId("map_conv");
+							sub.setReplyWith("sub"+System.currentTimeMillis()); // Unique value
+							myAgent.send(sub);
+							
+						}
+						else
+							System.out.println("FAILED");
+						//System.out.println("mapAgent: " + mapAgent.getName());
+					}
+					catch (FIPAException fe) {
+						fe.printStackTrace();
+					}
+				}
+			} );
 		}
 		else {
 			// Make the agent terminate
@@ -43,6 +92,32 @@ public class GoalAgent extends Agent {
 			doDelete();
 		}
 	}
+	/**
+	   Inner class RoutePriceRequestsServer.
+	 */
+	private class MapSubscriber extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			ACLMessage msg = myAgent.receive(mt);
+			if (msg != null) {
+				if (msg.getConversationId().equals("map_conv"))
+				{
+					// CFP Message received. Process it	
+					try {
+						map = (Map) msg.getContentObject();
+					} catch (UnreadableException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					System.out.println("map_height:" + map.map_height);
+				}
+
+			}
+			else {
+				block();
+			}
+		}
+	}  // End of inner class OfferRequestsServer
 
 	// Put agent clean-up operations here
 	protected void takeDown() {

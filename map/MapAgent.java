@@ -26,45 +26,102 @@ package map;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.io.Serializable;
+import java.util.ArrayList;
+import jade.core.AID;
 import jade.core.Agent;
-
-
+import jade.core.behaviours.CyclicBehaviour;
+import jade.domain.DFService;
+import jade.domain.FIPAException;
+import jade.domain.FIPAAgentManagement.DFAgentDescription;
+import jade.domain.FIPAAgentManagement.ServiceDescription;
+import jade.lang.acl.ACLMessage;
+import jade.lang.acl.MessageTemplate;
+import jade.wrapper.AgentController;
+import jade.wrapper.StaleProxyException;
 
 public class MapAgent extends Agent {
 	
 	private static final int PATH_SIZE = 12;
 	private static final int FIGURE_SIZES = 32;
-	private int MAP_HEIGHT = 0;
-	private int MAP_WIDTH = 0;
-	private int NO_OF_GOALS = 0;
-	private int[][] map;
+	private Map map;
+	private String map_path;
+	private ArrayList<AID> map_subscribers;
 
 	// Put agent initializations here
 	protected void setup() {
 		// Printout a welcome message
 		System.out.println("Hallo! BoxAgent " + getAID().getName() + " is running.");
+		map_subscribers = new ArrayList<AID>();
 
-		
 		// Loading arguments
 		Object[] args = getArguments();
 		if (args != null && args.length > 0) {
-
+			map_path = (String) args[0];
+			
+			// Register the map service for sending the map to other agents through the yellow pages
+			DFAgentDescription dfd = new DFAgentDescription();
+			dfd.setName(getAID());
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType("map");
+			sd.setName("Chokoban");
+			dfd.addServices(sd);
+			try {
+				DFService.register(this, dfd);
+			}
+			catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
+			
+			map = loader();
+			
+			// Add the behaviour serving queries from mover agents
+			addBehaviour(new MapSubscribeServer());
+			
+			createAgents();
+			
+			Viewer viewer = new Viewer(map.map_width, map.map_height);
+			
+			viewer.drawMap(map.map);
+			
 		}
 		else {
 			// Make the agent terminate
 			System.out.println("No arguments was passed");
-			//doDelete();
+			doDelete();
 		}
-		
-		
-		map = loader();
-		
-		Viewer viewer = new Viewer(MAP_WIDTH, MAP_HEIGHT);
-		
-		viewer.drawMap(map);
 	}
+	
+	/**
+	   Inner class MapSubscribeServer.
+	 */
+	private class MapSubscribeServer extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.SUBSCRIBE);
+			ACLMessage msg = myAgent.receive(mt);
+			if (msg != null) {
+				// SUBSCRIBE Message received. Process it
+				String title = msg.getContent();
+				map_subscribers.add(msg.getSender());
+				ACLMessage reply = msg.createReply();
+
+				reply.setPerformative(ACLMessage.INFORM);
+				reply.setConversationId("map_conv");
+				try {
+					reply.setContentObject(map);
+					myAgent.send(reply);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+			else {
+				block();
+			}
+		}
+	}  // End of inner class MapSubscribeServer
 	
 	private int[][] emptyMap(int[][] mapIn){
 		for(int i = 0 ; i < mapIn.length; i++)
@@ -73,14 +130,57 @@ public class MapAgent extends Agent {
 		return mapIn;
 	}
 	
-	private int[][] loader(){
+	private void startNewAgent(String className,String agentName,Object[] arguments) throws StaleProxyException 
+	{
+		((AgentController)getContainerController().createNewAgent(agentName,className,arguments)).start();
+	}
+	
+	private void createAgents()
+	{
+		int i;
+		for (i = 0; i < map.no_of_movers; i++)
+		{
+			Object[] temp = new Object[1];
+			temp[0] = new Integer(10+i);
+			try {
+				startNewAgent("mover.MoverAgent", "MoverAgent" + (10+i), temp);
+			} catch (StaleProxyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		for (i = 0; i < map.no_of_boxes; i++)
+		{
+			Object[] temp = new Object[1];
+			temp[0] = new Integer(1000+i);
+			try {
+				startNewAgent("box.BoxAgent", "BoxAgent" + (1000+i), temp);
+			} catch (StaleProxyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		Object[] temp = new Object[1];
+		temp[0] = new Integer(map.no_of_goals);
+		try {
+			startNewAgent("goal.GoalAgent", "GoalAgent", temp);
+		} catch (StaleProxyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}	
+	}
+	
+	private Map loader(){
 		
-		int[][] path = new int[0][0];
+		Map r = new Map();
+		int movers = 10;
+		int boxes = 1000;
+		int goals = 100;
 		
 		try{
 			  // Open the file that is the first 
 			  // command line parameter
-			  FileInputStream fstream = new FileInputStream("map/mymap.txt");
+			  FileInputStream fstream = new FileInputStream(map_path);
 			  // Get the object of DataInputStream
 			  DataInputStream in = new DataInputStream(fstream);
 			  BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -93,23 +193,20 @@ public class MapAgent extends Agent {
 			 
 			  if (temp.length == 3)
 			  {
-				  MAP_WIDTH = Integer.parseInt(temp[0]);
-				  MAP_HEIGHT = Integer.parseInt(temp[1]);
-				  NO_OF_GOALS = Integer.parseInt(temp[2]);				  
+				  r.map_width = Integer.parseInt(temp[0]);
+				  r.map_height = Integer.parseInt(temp[1]);
+				  r.no_of_goals = Integer.parseInt(temp[2]);				  
 			  }
 			  else
 				  System.out.println("ERROR: Map specs has wrong format");
 
 
 			  
-			  path = new int[MAP_WIDTH][MAP_HEIGHT];
-			  path = emptyMap(path);
+			  r.map = new int[r.map_width][r.map_height];
+			  r.map = emptyMap(r.map);
 			  
 			  int j = 0;
 			  //Read File Line By Line
-			  int solvers = 10;
-			  int boxes = 1000;
-			  int goals = 100;
 			  
 			  while ((strLine = br.readLine()) != null)   {
 				  // Print the content on the console
@@ -118,26 +215,26 @@ public class MapAgent extends Agent {
 					  switch (strLine.charAt(i)) {
 					case 'X':
 					case 'x':
-						path[i][j] = 1;
+						r.map[i][j] = 1;
 						break;
 						  
 					case '.':
-						path[i][j] = 2;
+						r.map[i][j] = 2;
 						break;
 						
 					case 'M':
 					case 'm':
-						path[i][j] = solvers++;
+						r.map[i][j] = movers++;
 						break;
 						
 					case 'G':
 					case 'g':
-						path[i][j] = goals++;
+						r.map[i][j] = goals++;
 						break;
 						
 					case 'J':
 					case 'j':
-						path[i][j] = boxes++;
+						r.map[i][j] = boxes++;
 						break;
 						
 					default:
@@ -151,11 +248,21 @@ public class MapAgent extends Agent {
 			    }catch (Exception e){//Catch exception if any
 			  System.err.println("Error: " + e.getMessage());
 			  }
-		return path;
+		r.no_of_boxes = boxes - 1000;
+		r.no_of_goals = goals - 100;
+		r.no_of_movers = movers - 10;
+		return r;
 	}
 
 	// Put agent clean-up operations here
 	protected void takeDown() {
+		// Deregister from the yellow pages
+		try {
+			DFService.deregister(this);
+		}
+		catch (FIPAException fe) {
+			fe.printStackTrace();
+		}
 		// Printout a dismissal message
 		System.out.println("BoxAgent " + getAID().getName() + " terminating.");
 	}
