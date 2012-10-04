@@ -58,7 +58,7 @@ public class MoverAgent extends Agent {
 			// Add behavior for finding boxes to request routes from
 			addBehaviour(new TickerBehaviour(this, 5000) {
 				protected void onTick() {
-					System.out.println("Requesting BoxAgents");
+					//System.out.println("Requesting BoxAgents");
 					// Update the list of seller agents
 					DFAgentDescription template = new DFAgentDescription();
 					ServiceDescription sd = new ServiceDescription();
@@ -66,16 +66,28 @@ public class MoverAgent extends Agent {
 					template.addServices(sd);
 					try {
 						DFAgentDescription[] result = DFService.search(myAgent, template); 
-						System.out.println("Found the following boxes:");
+						//System.out.println("Found the following boxes:");
 						boxAgents = new AID[result.length];
 						for (int i = 0; i < result.length; ++i) {
 							boxAgents[i] = result[i].getName();
-							System.out.println(boxAgents[i].getName());
+							//System.out.println(boxAgents[i].getName());
 						}
 					}
 					catch (FIPAException fe) {
 						fe.printStackTrace();
 					}
+					
+					/*
+					// Test af update map
+					ACLMessage order = new ACLMessage(ACLMessage.INFORM);
+					order.addReceiver(mapAgent);
+					order.setContent("9,4,9,5");
+					order.setConversationId("map_update");
+					order.setReplyWith("map_update"+System.currentTimeMillis());
+					myAgent.send(order);
+					*/
+					
+					
 
 					// Perform the request
 					myAgent.addBehaviour(new RequestBoxRoutePerformer());
@@ -139,7 +151,7 @@ public class MoverAgent extends Agent {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					System.out.println("map_height:" + map.map_height);
+					//System.out.println("map_height:" + map.map_height);
 				}
 
 			}
@@ -232,6 +244,7 @@ public class MoverAgent extends Agent {
 							System.out.println("Route successfully recieved from agent "+reply.getSender().getName());
 							System.out.println("Route = " + reply.getContent().toString());
 							//myAgent.doDelete();
+							
 						}
 						else {
 							System.out.println("Attempt failed: requested book already sold.");

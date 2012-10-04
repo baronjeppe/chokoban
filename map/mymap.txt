@@ -5,8 +5,8 @@ X.......X
 XXX.X.X.X
   X.X...X
  XX.XXX.XX
- X.GMM.G.X
- X..MG.J.X
+ X.GM..G.X
+ X...G.J.X
  X.XXX.XXX
  X.JJ..X
  XXXXXXX  

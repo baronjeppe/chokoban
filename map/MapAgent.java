@@ -49,6 +49,7 @@ public class MapAgent extends Agent {
 	private Map map;
 	private String map_path;
 	private ArrayList<AID> map_subscribers;
+	private Viewer viewer;
 
 	// Put agent initializations here
 	protected void setup() {
@@ -80,9 +81,11 @@ public class MapAgent extends Agent {
 			// Add the behaviour serving queries from mover agents
 			addBehaviour(new MapSubscribeServer());
 			
+			addBehaviour(new MapUpdateServer());
+			
 			createAgents();
 			
-			Viewer viewer = new Viewer(map.map_width, map.map_height);
+			viewer = new Viewer(map.map_width, map.map_height);
 			
 			viewer.drawMap(map.map);
 			
@@ -115,6 +118,49 @@ public class MapAgent extends Agent {
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}
+			}
+			else {
+				block();
+			}
+		}
+	}  // End of inner class MapSubscribeServer
+	
+	/**
+	   Inner class MapSubscribeServer.
+	 */
+	private class MapUpdateServer extends CyclicBehaviour {
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.INFORM);
+			ACLMessage msg = myAgent.receive(mt);
+			if (msg != null) {
+				if (msg.getConversationId().equals("map_update"))
+				{
+					String updates = msg.getContent();
+					String[] commands = updates.split(" ");
+					for (int i = 0; i < commands.length; i++)
+					{
+						System.out.println(commands[i]);
+						String[] coordinates = commands[i].split(",");
+						map.map[Integer.parseInt(coordinates[3])][Integer.parseInt(coordinates[2])] = map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])];
+						map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])] = 2;
+					}
+					
+					ACLMessage update = new ACLMessage(ACLMessage.INFORM);
+					for (int j = 0; j < map_subscribers.size(); j++)
+						update.addReceiver(map_subscribers.get(j));
+
+					update.setPerformative(ACLMessage.INFORM);
+					update.setConversationId("map_conv");
+					
+					try {
+						update.setContentObject(map);
+						myAgent.send(update);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					viewer.drawMap(map.map);
 				}
 			}
 			else {

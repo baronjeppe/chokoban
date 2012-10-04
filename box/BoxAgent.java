@@ -174,7 +174,7 @@ public class BoxAgent extends Agent {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					System.out.println("map_height:" + map.map_height);
+					//System.out.println("map_height:" + map.map_height);
 				}
 
 			}
