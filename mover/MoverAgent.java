@@ -81,14 +81,12 @@ public class MoverAgent extends Agent {
 					// Test af update map
 					ACLMessage order = new ACLMessage(ACLMessage.INFORM);
 					order.addReceiver(mapAgent);
-					order.setContent("9,4,9,5");
+					order.setContent("9,4,9,5 9,3,9,2");
 					order.setConversationId("map_update");
 					order.setReplyWith("map_update"+System.currentTimeMillis());
 					myAgent.send(order);
 					*/
 					
-					
-
 					// Perform the request
 					myAgent.addBehaviour(new RequestBoxRoutePerformer());
 				}

@@ -140,7 +140,6 @@ public class MapAgent extends Agent {
 					String[] commands = updates.split(" ");
 					for (int i = 0; i < commands.length; i++)
 					{
-						System.out.println(commands[i]);
 						String[] coordinates = commands[i].split(",");
 						map.map[Integer.parseInt(coordinates[3])][Integer.parseInt(coordinates[2])] = map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])];
 						map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])] = 2;

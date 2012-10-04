@@ -37,10 +37,6 @@
 package map;
 
 import java.awt.Color;
-import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.FileInputStream;
-import java.io.InputStreamReader;
 import javax.swing.JFrame;
 
 public class Viewer {
@@ -48,7 +44,7 @@ public class Viewer {
 
 	private static final int FIGURE_SIZES = 32;
 	
-	private final JFrame frame  = new JFrame();;
+	private final JFrame frame  = new JFrame();
 	
 	public Viewer(int map_width, int map_height){
 
@@ -60,7 +56,7 @@ public class Viewer {
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 	}
-	
+
 	public void drawMap(int[][] map){
 		frame.getContentPane().removeAll();
 		frame.revalidate();
@@ -87,32 +83,6 @@ public class Viewer {
 				else if(map[i][j] >= 1000 && map[i][j] <= 9999 )
 					drawBox(i*FIGURE_SIZES, j*FIGURE_SIZES);
 				
-
-				/*
-				switch (map[i][j]) {
-				case 1:
-					drawWall(i*FIGURE_SIZES, j*FIGURE_SIZES);
-					break;
-					
-				case 2:
-					drawBackground(i*FIGURE_SIZES, j*FIGURE_SIZES);
-					break;
-					
-				case :
-					drawGoal(i*FIGURE_SIZES, j*FIGURE_SIZES);
-					break;
-					
-				case 74:
-					drawBox(i*FIGURE_SIZES, j*FIGURE_SIZES);
-					
-				case 77:
-					drawSolver(i*FIGURE_SIZES, j*FIGURE_SIZES);
-					break;
-					
-
-				default:
-					break;
-				}*/
 			}
 		}
 	}
