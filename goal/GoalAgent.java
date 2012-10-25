@@ -50,7 +50,7 @@ public class GoalAgent extends Agent {
 		// Loading arguments
 		Object[] args = getArguments();
 		if (args != null && args.length > 0) {
-			id = (int) args[0];
+			id = Integer.parseInt(args[0].toString());
 			
 			addBehaviour(new MapSubscriber());
 			

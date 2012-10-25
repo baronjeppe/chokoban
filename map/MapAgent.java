@@ -30,6 +30,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
+
+import tools.Astar;
+import tools.Route;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -60,7 +63,7 @@ public class MapAgent extends Agent {
 		// Loading arguments
 		Object[] args = getArguments();
 		if (args != null && args.length > 0) {
-			map_path = (String) args[0];
+			map_path = args[0].toString();
 			
 			// Register the map service for sending the map to other agents through the yellow pages
 			DFAgentDescription dfd = new DFAgentDescription();
@@ -89,12 +92,75 @@ public class MapAgent extends Agent {
 			
 			viewer.drawMap(map.map);
 			
+			Astar as = new Astar();
+			
+			int[] start = {1,1};
+			int[] end = {4,7};
+			
+			Route temp = as.calcMoverRoute(map.map,start,end);
+			
+			simulateRoute(map.map, temp.route, 250);
 		}
 		else {
 			// Make the agent terminate
 			System.out.println("No arguments was passed");
 			doDelete();
 		}
+	}
+	
+	void simulateRoute(int[][] map, String route, int wait)
+	{
+		int[] solverposition = findSolver(map);
+		for (int i = 0; i<route.length(); i++)
+		{
+			if (route.charAt(i) == 'u')
+			{
+				map[solverposition[0]][solverposition[1]-1] = 10;
+				map[solverposition[0]][solverposition[1]] = 2;
+				solverposition[1] -= 1;
+			}
+			else if (route.charAt(i) == 'd')
+			{
+				map[solverposition[0]][solverposition[1]+1] = 10;
+				map[solverposition[0]][solverposition[1]] = 2;
+				solverposition[1] += 1;
+			}
+			else if (route.charAt(i) == 'l')
+			{
+				map[solverposition[0]-1][solverposition[1]] = 10;
+				map[solverposition[0]][solverposition[1]] = 2;
+				solverposition[0] -= 1;
+			}
+			else if (route.charAt(i) == 'r')
+			{
+				map[solverposition[0]+1][solverposition[1]] = 10;
+				map[solverposition[0]][solverposition[1]] = 2;
+				solverposition[0] += 1;
+			}
+			viewer.updateMap(map);
+			try {
+				Thread.sleep(wait);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private int[] findSolver(int[][] map)
+	{
+		int[] r = new int[2];
+		for (int i = 0; i<map.length; i++)
+			for (int j = 0; j<map[0].length; j++)
+				if (map[i][j] == 10)
+				{
+					r[0] = i;
+					r[1] = j;
+					return r;
+				}
+		r[0] = -1;
+		r[1] = -1;
+		return r;
 	}
 	
 	/**

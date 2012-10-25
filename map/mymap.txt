@@ -1,12 +1,12 @@
 10 11 5
 XXXXX  
-X...XXXXX
+XM..XXXXX
 X.......X
 XXX.X.X.X
   X.X...X
- XX.XXX.XX
- X.GM..G.X
- X...G.J.X
+ XXXXXX.XX
+ X...XX..X
+ X..GX...X
  X.XXX.XXX
- X.JJ..X
+ X.....X
  XXXXXXX  
