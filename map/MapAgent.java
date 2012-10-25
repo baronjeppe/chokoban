@@ -85,7 +85,7 @@ public class MapAgent extends Agent {
 			
 			createAgents();
 			
-			viewer = new Viewer(map.map_width, map.map_height);
+			viewer = new Viewer(map.map);
 			
 			viewer.drawMap(map.map);
 			
@@ -142,7 +142,7 @@ public class MapAgent extends Agent {
 					{
 						String[] coordinates = commands[i].split(",");
 						map.map[Integer.parseInt(coordinates[3])][Integer.parseInt(coordinates[2])] = map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])];
-						map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])] = 2;
+						map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])] = 2; // TODO FIX this..!
 					}
 					
 					ACLMessage update = new ACLMessage(ACLMessage.INFORM);
@@ -159,7 +159,7 @@ public class MapAgent extends Agent {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-					viewer.drawMap(map.map);
+					viewer.updateMap(map.map);
 				}
 			}
 			else {

@@ -37,24 +37,80 @@
 package map;
 
 import java.awt.Color;
+
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 
 public class Viewer {
 	
+	JComponent[][] graphics;
+	
+	int[][] map_data;
 
 	private static final int FIGURE_SIZES = 32;
 	
 	private final JFrame frame  = new JFrame();
 	
-	public Viewer(int map_width, int map_height){
+	public Viewer(int[][] map){
+		
+		graphics = new JComponent[map.length][map[0].length];
+		
+		map_data = new int[map.length][];
+		for(int i = 0; i < map.length; i++)
+		{
+		  map_data[i] = new int[map[i].length];
+		  for (int j = 0; j < map[i].length; j++)
+		  {
+		    map_data[i][j] = map[i][j];
+		  }
+		}
 
-		frame.setSize((1+map_width)*FIGURE_SIZES-16,(1+map_height)*FIGURE_SIZES+6);
+		frame.setSize((1+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
 		
 		Color c = new Color(0,0,0);
 		frame.getContentPane().setBackground(c);
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+	}
+	
+	public void updateMap(int[][] map)
+	{
+		for(int i = 0; i < map.length; i++){
+			for(int j = 0; j < map[0].length; j++){
+				if (map_data[i][j] != map[i][j])
+				{
+					//System.out.println("map_data [" + i + "][" + j + "]:" + map_data[i][j] + " map: " + map[i][j]);
+					frame.getContentPane().remove(graphics[i][j]);
+					if(map[i][j] == 1)
+						drawWall(i, j);
+					
+					else if(map[i][j] == 2)
+						drawBackground(i, j);
+					
+					else if(map[i][j] >= 10 && map[i][j] <= 99)
+						drawSolver(i, j);
+					
+					else if(map[i][j] >= 100 && map[i][j] <= 999)
+						drawGoal(i, j);
+					
+					else if(map[i][j] >= 1000 && map[i][j] <= 9999 )
+						drawBox(i, j);
+				}
+			}
+		}
+		frame.revalidate();
+		frame.repaint();
+		
+		map_data = new int[map.length][];
+		for(int i = 0; i < map.length; i++)
+		{
+		  map_data[i] = new int[map[i].length];
+		  for (int j = 0; j < map[i].length; j++)
+		  {
+		    map_data[i][j] = map[i][j];
+		  }
+		}
 	}
 
 	public void drawMap(int[][] map){
@@ -69,19 +125,19 @@ public class Viewer {
 		for(int i = 0; i < map.length; i++){
 			for(int j = 0; j < map[0].length; j++){
 				if(map[i][j] == 1)
-					drawWall(i*FIGURE_SIZES, j*FIGURE_SIZES);
+					drawWall(i, j);
 				
 				else if(map[i][j] == 2)
-					drawBackground(i*FIGURE_SIZES, j*FIGURE_SIZES);
+					drawBackground(i, j);
 				
 				else if(map[i][j] >= 10 && map[i][j] <= 99)
-					drawSolver(i*FIGURE_SIZES, j*FIGURE_SIZES);
+					drawSolver(i, j);
 				
 				else if(map[i][j] >= 100 && map[i][j] <= 999)
-					drawGoal(i*FIGURE_SIZES, j*FIGURE_SIZES);
+					drawGoal(i, j);
 				
 				else if(map[i][j] >= 1000 && map[i][j] <= 9999 )
-					drawBox(i*FIGURE_SIZES, j*FIGURE_SIZES);
+					drawBox(i, j);
 				
 			}
 		}
@@ -97,31 +153,36 @@ public class Viewer {
 	
 
 	private void drawBox(int x, int y){
-		ShowBox panel = new ShowBox(x,y);
+		ShowBox panel = new ShowBox(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
 	}
 	
 	private void drawSolver(int x, int y){
-		ShowSolver panel = new ShowSolver(x,y);
+		ShowSolver panel = new ShowSolver(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
 	}
 	
 	private void drawGoal(int x, int y){
-		ShowGoal panel = new ShowGoal(x,y);
+		ShowGoal panel = new ShowGoal(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
 	}
 	
 	private void drawBackground(int x, int y){
-		ShowBackground panel = new ShowBackground(x,y);
+		ShowBackground panel = new ShowBackground(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
 	}
 	
 	private void drawWall(int x, int y){
-		ShowWall panel = new ShowWall(x,y);
+		ShowWall panel = new ShowWall(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
 	}
