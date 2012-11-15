@@ -23,7 +23,15 @@ Boston, MA  02111-1307, USA.
 
 package box;
 
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+
+import timer.Timer;
+import box.nodeHashing.NodeHashTable;
+import box.Node;
+import box.State;
 import map.Map;
+import map.Viewer;
 import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
@@ -114,22 +122,127 @@ public class BoxAgent extends Agent {
 		}
 	}
 	
-	String calcRoute()
+	private int[][] makeOriginalMap(int[][] map)
 	{
-		String r;
-		
-		r = "This is my route";
-		
-		return r;
+		int[][] ret = new int[map.length][map[0].length];
+		for (int i = 0; i<map.length; i++)
+			for (int j = 0; j<map[0].length;j++){
+				if (map[i][j] == 100)
+					ret[i][j] = 2;
+				else if (map[i][j] == 10)
+					ret[i][j] = 2;
+				else if (map[i][j] == 1000)
+					ret[i][j] = 100;
+				else
+					ret[i][j] = map[i][j];
+			}
+		return ret;
 	}
 	
-	int calcRoutePrice()
+	private int[][] reverseMap(int[][] map)
 	{
-		int r;
+		int[][] ret = new int[map.length][map[0].length];
+		for (int i = 0; i<map.length; i++)
+			for (int j = 0; j<map[0].length;j++){
+				if (map[i][j] == 100)
+					ret[i][j] = 1000;
+				else if (map[i][j] == 1000)
+					ret[i][j] = 100;
+				else
+					ret[i][j] = map[i][j];
+			}
+		return ret;
+	}
+
+	public String solve(int[][] map, int[] mover)
+	{
+		String ret = new String();
 		
-		r = 100;
+		PriorityQueue<Node> openList = new PriorityQueue<Node>();
 		
-		return r;
+		NodeHashTable closedList = new NodeHashTable();
+		NodeHashTable openListHash = new NodeHashTable();
+		
+		LinkedList<Node> temp = new LinkedList<Node>();
+
+		Timer timer = new Timer();
+		
+		State.original_map = makeOriginalMap(map);
+		State initialState = new State(reverseMap(map), mover);
+		
+		Node initialNode = new Node(null,'-',initialState);
+		
+		openList.add(initialNode);
+		openListHash.insert(initialNode);
+		
+		while(true) {
+		    if (openList.isEmpty() ) {
+		    	System.out.println("No Solution Found\n");
+		    	ret = "-";
+		    	break;
+		    }
+		    
+		    Node currentNode = openList.peek();
+		    
+		    if (currentNode.state.equalToMap(map)) {
+		    	System.out.println("Solution Found\n");
+		    	System.out.println("Collisions: " + closedList.getCollisions());
+		    	ret = currentNode.printSolution();
+		    	System.out.println("Price: " + currentNode.state.price);
+		    	System.out.println("Nodes expanded: " + Integer.toString( Node.nodesExpanded ) );
+		    	break;
+		    }
+		    temp = currentNode.expand();
+		    
+		    while(!temp.isEmpty()){
+		    	if (!openListHash.contains(temp.getFirst()) && !closedList.contains(temp.getFirst())) {
+		    		openList.add(temp.getFirst());
+		    		openListHash.insert(temp.pollFirst());
+		    	}
+		    	else {
+		    		temp.removeFirst();
+		    	}
+		    }
+		    if (timer.timeSinceStartInNS() > 1000000000)
+		    {
+		    	System.out.println("Time elapsed: " + timer.timeSinceStartInSeconds() + " seconds \t Nodes expanded: " + Node.nodesExpanded + "\tOpenlist: " + openList.size());
+		    }
+		    
+		    if (!closedList.contains(currentNode))
+		    	closedList.insert(currentNode);
+		    openList.remove(currentNode);
+		    openListHash.remove(currentNode);
+		}
+		return ret;
+	}
+	
+	String calcRoute()
+	{
+		String ret;
+		int[] mover = new int[2];
+		
+		int[][] solverMap = new int[map.map_width][map.map_height];
+		for (int i = 0; i < map.map_width; i++)
+			for (int j = 0; j < map.map_height; j++)
+			{
+				if (map.map[i][j] >= 1000)
+					solverMap[i][j] = 1;
+				else if (map.map[i][j] == 10)
+				{
+					mover[0] = i;
+					mover[1] = j;
+					solverMap[i][j] = 10;
+				}
+				else
+					solverMap[i][j] = map.map[i][j];
+				
+				if (map.map[i][j] == id)
+					solverMap[i][j] = 1000;
+			}
+		
+		ret = solve(solverMap,mover);
+		
+		return ret;
 	}
 	
 	/**
@@ -147,7 +260,7 @@ public class BoxAgent extends Agent {
 				// Calc route price and propose
 				reply.setPerformative(ACLMessage.PROPOSE);
 				reply.setConversationId("route_conv");
-				reply.setContent(String.valueOf(calcRoutePrice()));
+				reply.setContent(calcRoute());
 
 				myAgent.send(reply);
 			}

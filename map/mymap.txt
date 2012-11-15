@@ -1,12 +1,7 @@
-10 11 5
-XXXXX  
-XM..XXXXX
-X.......X
-XXX.X.X.X
-  X.X...X
- XXXXXX.XX
- X...XX..X
- X..GX...X
- X.XXX.XXX
- X.....X
- XXXXXXX  
+6 6 1
+XXXXXX
+XM...X
+X.JJ.X
+X.J..X
+X.G..X
+XXXXXX

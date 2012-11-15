@@ -171,6 +171,28 @@ public class MoverAgent extends Agent {
 		private int repliesCnt = 0; // The counter of replies from seller agents
 		private MessageTemplate mt; // The template to receive replies
 		private int step = 0;
+		private String bestRoute;
+		
+		public void walkRoute(String route)
+		{
+			for (int i = 0; i<route.length(); i++)
+			{
+				ACLMessage order = new ACLMessage(ACLMessage.INFORM);
+				order.addReceiver(mapAgent);
+				order.setContent(route.substring(i, i+1));
+				System.out.println(route.substring(i, i+1));
+				order.setConversationId("map_update");
+				order.setReplyWith("map_update"+System.currentTimeMillis());
+				myAgent.send(order);
+				
+				try {
+					Thread.sleep(200);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 
 		public void action() {
 			switch (step) {
@@ -196,20 +218,23 @@ public class MoverAgent extends Agent {
 					// Reply received
 					if (reply.getConversationId().equals("route_conv"))
 					{
-						if (reply.getPerformative() == ACLMessage.PROPOSE) {
+						if (reply.getPerformative() == ACLMessage.PROPOSE && !reply.getContent().equals("-")) {
 							// This is an offer 
-							int price = Integer.parseInt(reply.getContent());
+							int price = reply.getContent().length();
 							if (boxWithBestRoute == null || price < bestPrice) {
 								// This is the best offer at present
 								bestPrice = price;
+								bestRoute = reply.getContent();
 								boxWithBestRoute = reply.getSender();
 							}
 						}
 						repliesCnt++;
 						if (repliesCnt >= boxAgents.length) {
 							// We received all replies
-							System.out.println("best price found from agent: " + boxWithBestRoute.getName());
+							System.out.println("best price found from agent: " + boxWithBestRoute.getName() + " Price: " + bestPrice + " Route: " + bestRoute);
+							walkRoute(bestRoute);
 							step = 2; 
+							
 						}
 					}
 				}

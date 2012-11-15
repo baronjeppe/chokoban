@@ -50,6 +50,7 @@ public class MapAgent extends Agent {
 	private static final int PATH_SIZE = 12;
 	private static final int FIGURE_SIZES = 32;
 	private Map map;
+	private Map original_map;
 	private String map_path;
 	private ArrayList<AID> map_subscribers;
 	private Viewer viewer;
@@ -80,6 +81,7 @@ public class MapAgent extends Agent {
 			}
 			
 			map = loader();
+			original_map = loader();
 			
 			// Add the behaviour serving queries from mover agents
 			addBehaviour(new MapSubscribeServer());
@@ -92,14 +94,6 @@ public class MapAgent extends Agent {
 			
 			viewer.drawMap(map.map);
 			
-			Astar as = new Astar();
-			
-			int[] start = {1,1};
-			int[] end = {4,7};
-			
-			Route temp = as.calcMoverRoute(map.map,start,end);
-			
-			simulateRoute(map.map, temp.route, 250);
 		}
 		else {
 			// Make the agent terminate
@@ -108,42 +102,70 @@ public class MapAgent extends Agent {
 		}
 	}
 	
-	void simulateRoute(int[][] map, String route, int wait)
+	void simulateRoute(String route, int wait)
 	{
-		int[] solverposition = findSolver(map);
+		int[] solverposition = findSolver(map.map);
 		for (int i = 0; i<route.length(); i++)
 		{
-			if (route.charAt(i) == 'u')
+			if (route.charAt(i) == 'u' || route.charAt(i) == 'U')
 			{
-				map[solverposition[0]][solverposition[1]-1] = 10;
-				map[solverposition[0]][solverposition[1]] = 2;
+				if (map.map[solverposition[0]][solverposition[1]-1] >= 1000)
+					if (map.map[solverposition[0]][solverposition[1]-2] < 100 && map.map[solverposition[0]][solverposition[1]-2] >= 1000)
+						map.map[solverposition[0]][solverposition[1]-2] = map.map[solverposition[0]][solverposition[1]-1];
+				map.map[solverposition[0]][solverposition[1]-1] = 10;
+				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
+				else
+					map.map[solverposition[0]][solverposition[1]] = 2;
 				solverposition[1] -= 1;
 			}
-			else if (route.charAt(i) == 'd')
+			else if (route.charAt(i) == 'd' || route.charAt(i) == 'D')
 			{
-				map[solverposition[0]][solverposition[1]+1] = 10;
-				map[solverposition[0]][solverposition[1]] = 2;
+				if (map.map[solverposition[0]][solverposition[1]+1] >= 1000)
+					if (map.map[solverposition[0]][solverposition[1]+2] < 100 && map.map[solverposition[0]][solverposition[1]+2] >= 1000)
+						map.map[solverposition[0]][solverposition[1]+2] = map.map[solverposition[0]][solverposition[1]+1];
+				map.map[solverposition[0]][solverposition[1]+1] = 10;
+				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
+				else
+					map.map[solverposition[0]][solverposition[1]] = 2;
 				solverposition[1] += 1;
 			}
-			else if (route.charAt(i) == 'l')
+			else if (route.charAt(i) == 'l' || route.charAt(i) == 'L')
 			{
-				map[solverposition[0]-1][solverposition[1]] = 10;
-				map[solverposition[0]][solverposition[1]] = 2;
+				if (map.map[solverposition[0]-1][solverposition[1]] >= 1000)
+					if (map.map[solverposition[0]-2][solverposition[1]] < 100 && map.map[solverposition[0]-2][solverposition[1]] >= 1000)
+						map.map[solverposition[0]-2][solverposition[1]] = map.map[solverposition[0]-1][solverposition[1]];
+				map.map[solverposition[0]-1][solverposition[1]] = 10;
+				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
+				else
+					map.map[solverposition[0]][solverposition[1]] = 2;
 				solverposition[0] -= 1;
 			}
-			else if (route.charAt(i) == 'r')
+			else if (route.charAt(i) == 'r' || route.charAt(i) == 'R')
 			{
-				map[solverposition[0]+1][solverposition[1]] = 10;
-				map[solverposition[0]][solverposition[1]] = 2;
+				if (map.map[solverposition[0]+1][solverposition[1]] >= 1000)
+					if (map.map[solverposition[0]+2][solverposition[1]] < 100 && map.map[solverposition[0]+2][solverposition[1]] >= 1000)
+						map.map[solverposition[0]+2][solverposition[1]] = map.map[solverposition[0]+1][solverposition[1]];
+				map.map[solverposition[0]+1][solverposition[1]] = 10;
+				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
+				else
+					map.map[solverposition[0]][solverposition[1]] = 2;
 				solverposition[0] += 1;
 			}
-			viewer.updateMap(map);
-			try {
-				Thread.sleep(wait);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			viewer.updateMap(map.map);
+			if (wait != 0)
+			{
+				try {
+					Thread.sleep(wait);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+
 		}
 	}
 	
@@ -202,14 +224,7 @@ public class MapAgent extends Agent {
 			if (msg != null) {
 				if (msg.getConversationId().equals("map_update"))
 				{
-					String updates = msg.getContent();
-					String[] commands = updates.split(" ");
-					for (int i = 0; i < commands.length; i++)
-					{
-						String[] coordinates = commands[i].split(",");
-						map.map[Integer.parseInt(coordinates[3])][Integer.parseInt(coordinates[2])] = map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])];
-						map.map[Integer.parseInt(coordinates[1])][Integer.parseInt(coordinates[0])] = 2; // TODO FIX this..!
-					}
+					simulateRoute(msg.getContent(), 0);
 					
 					ACLMessage update = new ACLMessage(ACLMessage.INFORM);
 					for (int j = 0; j < map_subscribers.size(); j++)
