@@ -103,7 +103,7 @@ public class Viewer implements MouseListener {
 				}
 			}
 		}
-		frame.revalidate();
+		frame.validate();
 		frame.repaint();
 		
 		map_data = new int[map.length][];
@@ -119,7 +119,7 @@ public class Viewer implements MouseListener {
 
 	public void drawMap(int[][] map){
 		frame.getContentPane().removeAll();
-		frame.revalidate();
+		frame.validate();
 		frame.repaint();
 		drawMapPriv(map);
 	}
