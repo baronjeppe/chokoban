@@ -37,11 +37,15 @@
 package map;
 
 import java.awt.Color;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JPanel;
 
-public class Viewer {
+public class Viewer implements MouseListener {
 	
 	JComponent[][] graphics;
 	
@@ -49,10 +53,9 @@ public class Viewer {
 
 	private static final int FIGURE_SIZES = 32;
 	
-	private final JFrame frame  = new JFrame();
-	
-	public Viewer(int[][] map){
+	private JFrame frame  = new JFrame();
 		
+	public Viewer(int[][] map){
 		graphics = new JComponent[map.length][map[0].length];
 		
 		map_data = new int[map.length][];
@@ -65,12 +68,13 @@ public class Viewer {
 		  }
 		}
 
-		frame.setSize((1+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
+		frame.setSize((1+3+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
 		
 		Color c = new Color(0,0,0);
-		frame.getContentPane().setBackground(c);
+		frame.getContentPane().setBackground(c);		
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 
 	}
 	
@@ -141,6 +145,7 @@ public class Viewer {
 				
 			}
 		}
+		drawBut(map.length,0);
 	}
 	
 	private void printMap(int[][] map){
@@ -185,6 +190,42 @@ public class Viewer {
 		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
+	}
+
+	private void drawBut(int x, int y){
+		ShowBut panel = new ShowBut(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		panel.addMouseListener(this);
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	
+	@Override
+	public void mouseClicked(MouseEvent arg0) {
+		System.out.println("lol");
+	}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseExited(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mousePressed(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }
