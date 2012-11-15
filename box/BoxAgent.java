@@ -222,6 +222,8 @@ public class BoxAgent extends Agent {
 		int[] mover = new int[2];
 		
 		int[][] solverMap = new int[map.map_width][map.map_height];
+		
+		
 		for (int i = 0; i < map.map_width; i++)
 			for (int j = 0; j < map.map_height; j++)
 			{
@@ -233,12 +235,22 @@ public class BoxAgent extends Agent {
 					mover[1] = j;
 					solverMap[i][j] = 10;
 				}
+				else if(map.map[i][j] >= 100 && map.map[i][j] < 1000){
+					solverMap[i][j] = 100;
+				}
 				else
 					solverMap[i][j] = map.map[i][j];
 				
 				if (map.map[i][j] == id)
 					solverMap[i][j] = 1000;
 			}
+		
+		for (int i = 0; i < solverMap[0].length; i++){
+			for (int j = 0; j < solverMap.length; j++){
+				System.out.print(solverMap[j][i] + "\t");
+			}
+			System.out.println("");
+		}
 		
 		ret = solve(solverMap,mover);
 		
@@ -314,6 +326,8 @@ public class BoxAgent extends Agent {
 				reply.setContent(calcRoute());
 
 				myAgent.send(reply);
+				
+				doDelete();
 			}
 			else {
 				block();

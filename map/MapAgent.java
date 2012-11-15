@@ -110,10 +110,10 @@ public class MapAgent extends Agent {
 			if (route.charAt(i) == 'u' || route.charAt(i) == 'U')
 			{
 				if (map.map[solverposition[0]][solverposition[1]-1] >= 1000)
-					if (map.map[solverposition[0]][solverposition[1]-2] < 100 && map.map[solverposition[0]][solverposition[1]-2] >= 1000)
+					if (map.map[solverposition[0]][solverposition[1]-2] < 1000)
 						map.map[solverposition[0]][solverposition[1]-2] = map.map[solverposition[0]][solverposition[1]-1];
 				map.map[solverposition[0]][solverposition[1]-1] = 10;
-				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
 					map.map[solverposition[0]][solverposition[1]] = 2;
@@ -122,10 +122,10 @@ public class MapAgent extends Agent {
 			else if (route.charAt(i) == 'd' || route.charAt(i) == 'D')
 			{
 				if (map.map[solverposition[0]][solverposition[1]+1] >= 1000)
-					if (map.map[solverposition[0]][solverposition[1]+2] < 100 && map.map[solverposition[0]][solverposition[1]+2] >= 1000)
+					if (map.map[solverposition[0]][solverposition[1]+2] < 1000)
 						map.map[solverposition[0]][solverposition[1]+2] = map.map[solverposition[0]][solverposition[1]+1];
 				map.map[solverposition[0]][solverposition[1]+1] = 10;
-				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
 					map.map[solverposition[0]][solverposition[1]] = 2;
@@ -134,10 +134,10 @@ public class MapAgent extends Agent {
 			else if (route.charAt(i) == 'l' || route.charAt(i) == 'L')
 			{
 				if (map.map[solverposition[0]-1][solverposition[1]] >= 1000)
-					if (map.map[solverposition[0]-2][solverposition[1]] < 100 && map.map[solverposition[0]-2][solverposition[1]] >= 1000)
+					if (map.map[solverposition[0]-2][solverposition[1]] < 1000)
 						map.map[solverposition[0]-2][solverposition[1]] = map.map[solverposition[0]-1][solverposition[1]];
 				map.map[solverposition[0]-1][solverposition[1]] = 10;
-				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
 					map.map[solverposition[0]][solverposition[1]] = 2;
@@ -146,15 +146,16 @@ public class MapAgent extends Agent {
 			else if (route.charAt(i) == 'r' || route.charAt(i) == 'R')
 			{
 				if (map.map[solverposition[0]+1][solverposition[1]] >= 1000)
-					if (map.map[solverposition[0]+2][solverposition[1]] < 100 && map.map[solverposition[0]+2][solverposition[1]] >= 1000)
+					if (map.map[solverposition[0]+2][solverposition[1]] < 1000)
 						map.map[solverposition[0]+2][solverposition[1]] = map.map[solverposition[0]+1][solverposition[1]];
 				map.map[solverposition[0]+1][solverposition[1]] = 10;
-				if (map.map[solverposition[0]][solverposition[1]] >= 100 && map.map[solverposition[0]][solverposition[1]] < 1000)
+				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
 					map.map[solverposition[0]][solverposition[1]] = 2;
 				solverposition[0] += 1;
 			}
+			
 			viewer.updateMap(map.map);
 			if (wait != 0)
 			{

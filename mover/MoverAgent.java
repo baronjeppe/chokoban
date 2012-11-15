@@ -226,11 +226,15 @@ public class MoverAgent extends Agent {
 								bestPrice = price;
 								bestRoute = reply.getContent();
 								boxWithBestRoute = reply.getSender();
+								
 							}
 						}
 						repliesCnt++;
 						if (repliesCnt >= boxAgents.length) {
 							// We received all replies
+							if(bestRoute == null){
+								System.out.println("null best route");
+							}
 							System.out.println("best price found from agent: " + boxWithBestRoute.getName() + " Price: " + bestPrice + " Route: " + bestRoute);
 							walkRoute(bestRoute);
 							step = 2; 
