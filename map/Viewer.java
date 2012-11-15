@@ -33,7 +33,7 @@ public class Viewer implements MouseListener {
 		  }
 		}
 
-		frame.setSize((1+3+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
+		frame.setSize((1+6+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
 		
 		Color c = new Color(0,0,0);
 		frame.getContentPane().setBackground(c);		
@@ -110,7 +110,9 @@ public class Viewer implements MouseListener {
 				
 			}
 		}
-		drawBut(map.length,0);
+		drawBut(map.length+1,0);
+		drawChokoban(map.length, map[0].length-5);
+		
 	}
 	
 	private void printMap(int[][] map){
@@ -159,6 +161,13 @@ public class Viewer implements MouseListener {
 
 	private void drawBut(int x, int y){
 		ShowBut panel = new ShowBut(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		panel.addMouseListener(this);
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	
+	private void drawChokoban(int x, int y){
+		ShowChokoban panel = new ShowChokoban(x*FIGURE_SIZES,y*FIGURE_SIZES);
 		panel.addMouseListener(this);
 		frame.add(panel);
 		frame.setVisible(true);
