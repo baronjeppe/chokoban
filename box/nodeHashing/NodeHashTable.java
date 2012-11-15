@@ -87,7 +87,7 @@ public class NodeHashTable
         	collisions++;
             currentPos = startPos + (offset * offset);  // Compute ith probe using quadratic probing
             offset += 1;
-            if( currentPos >= array.length )
+            while( currentPos >= array.length )
                 currentPos -= array.length;
         }
         return currentPos;

@@ -56,7 +56,7 @@ public class MoverAgent extends Agent {
 			addBehaviour(new MapSubscriber());
 		
 			// Add behavior for finding boxes to request routes from
-			addBehaviour(new TickerBehaviour(this, 5000) {
+			addBehaviour(new TickerBehaviour(this, 10000) {
 				protected void onTick() {
 					//System.out.println("Requesting BoxAgents");
 					// Update the list of seller agents
