@@ -1,48 +1,14 @@
 
-/*************************************************************************************
-# Copyright (c) 2012, Thomas Iversen
-# All rights reserved.
-# 
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-# 1. Redistributions of source code must retain the above copyright
-#    notice, this list of conditions and the following disclaimer.
-# 2. Redistributions in binary form must reproduce the above copyright
-#    notice, this list of conditions and the following disclaimer in the
-#    documentation and/or other materials provided with the distribution.
-# 3. All advertising materials mentioning features or use of this software
-#    must display the following acknowledgement:
-#    This product includes software developed by the University of Southern Denmark.
-# 4. Neither the name of the University of Southern Denmark nor the
-#    names of its contributors may be used to endorse or promote products
-#    derived from this software without specific prior written permission.
-# 
-# THIS SOFTWARE IS PROVIDED BY Anders Bøgild "AS IS" AND ANY
-# EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-# DISCLAIMED. IN NO EVENT SHALL Anders Bøgild BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-**************************************************************************************
-# File:     Viewer.java                                            
-# Purpose:  Viewer for the Sokoban game (http://www.game-sokoban.com/), when the map is presented in
-# 			an text file, or an array.
-# Project:  Sokoban Solver, using agent oriented programming
-# Author:   Thomas Iversen (thive09@student.sdu.dk)
-# Created:  Sep 23, 2012 Thomas Iversen
-*************************************************************************************/
 package map;
 
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
-
+import javax.swing.JPanel;
 
 public class Viewer implements MouseListener {
 	
@@ -67,12 +33,13 @@ public class Viewer implements MouseListener {
 		  }
 		}
 
-		frame.setSize((1+6+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
+		frame.setSize((1+3+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
 		
 		Color c = new Color(0,0,0);
 		frame.getContentPane().setBackground(c);		
 		
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
 
 	}
 	
@@ -143,8 +110,7 @@ public class Viewer implements MouseListener {
 				
 			}
 		}
-		drawBut(map.length+1,0);
-		drawChokoban(map.length, map[0].length-5);
+		drawBut(map.length,0);
 	}
 	
 	private void printMap(int[][] map){
@@ -194,12 +160,6 @@ public class Viewer implements MouseListener {
 	private void drawBut(int x, int y){
 		ShowBut panel = new ShowBut(x*FIGURE_SIZES,y*FIGURE_SIZES);
 		panel.addMouseListener(this);
-		frame.add(panel);
-		frame.setVisible(true);
-	}
-	
-	private void drawChokoban(int x, int y){
-		ShowChokoban panel = new ShowChokoban(x*FIGURE_SIZES,y*FIGURE_SIZES);
 		frame.add(panel);
 		frame.setVisible(true);
 	}

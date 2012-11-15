@@ -4,5 +4,8 @@
 *.jar
 *.war
 *.ear
-APDescription.txt
-MTPs-Main-Container.txt
+.classpath
+.project
+.settings*
+bin*
+*.txt
