@@ -177,7 +177,7 @@ public class BoxAgent extends Agent {
 		
 		while(true) {
 		    if (openList.isEmpty() ) {
-		    	System.out.println("No Solution Found\n");
+		    	//System.out.println("No Solution Found\n");
 		    	ret = "-";
 		    	break;
 		    }
@@ -185,11 +185,11 @@ public class BoxAgent extends Agent {
 		    Node currentNode = openList.peek();
 		    
 		    if (currentNode.state.equalToMap(map)) {
-		    	System.out.println("Solution Found\n");
-		    	System.out.println("Collisions: " + closedList.getCollisions());
+		    //	System.out.println("Solution Found\n");
+		    	//System.out.println("Collisions: " + closedList.getCollisions());
 		    	ret = currentNode.printSolution();
-		    	System.out.println("Price: " + currentNode.state.price);
-		    	System.out.println("Nodes expanded: " + Integer.toString( Node.nodesExpanded ) );
+		    	//System.out.println("Price: " + currentNode.state.price);
+		    	//System.out.println("Nodes expanded: " + Integer.toString( Node.nodesExpanded ) );
 		    	break;
 		    }
 		    temp = currentNode.expand();
@@ -244,13 +244,13 @@ public class BoxAgent extends Agent {
 				if (map.map[i][j] == id)
 					solverMap[i][j] = 1000;
 			}
-		
+		/*
 		for (int i = 0; i < solverMap[0].length; i++){
 			for (int j = 0; j < solverMap.length; j++){
 				System.out.print(solverMap[j][i] + "\t");
 			}
 			System.out.println("");
-		}
+		}*/
 		
 		ret = solve(solverMap,mover);
 		
@@ -273,6 +273,7 @@ public class BoxAgent extends Agent {
 				reply.setPerformative(ACLMessage.PROPOSE);
 				reply.setConversationId("route_conv");
 				reply.setContent(calcRoute());
+				//System.out.println(myAgent.getName() + " has been requested");
 
 				myAgent.send(reply);
 			}
@@ -327,7 +328,7 @@ public class BoxAgent extends Agent {
 
 				myAgent.send(reply);
 				
-				doDelete();
+				//doDelete();
 			}
 			else {
 				block();

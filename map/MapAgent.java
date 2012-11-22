@@ -276,7 +276,7 @@ public class MapAgent extends Agent {
 				e.printStackTrace();
 			}	
 		}
-		for (i = 0; i < map.no_of_boxes; i++)
+		for (i = 0; i < map.no_of_boxes1; i++)
 		{
 			Object[] temp = new Object[1];
 			temp[0] = new Integer(1000+i);
@@ -287,6 +287,43 @@ public class MapAgent extends Agent {
 				e.printStackTrace();
 			}	
 		}
+		
+		for (i = 0; i < map.no_of_boxes2; i++)
+		{
+			Object[] temp = new Object[1];
+			temp[0] = new Integer(2000+i);
+			try {
+				startNewAgent("box.BoxAgent", "BoxAgent" + (2000+i), temp);
+			} catch (StaleProxyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		
+		for (i = 0; i < map.no_of_boxes3; i++)
+		{
+			Object[] temp = new Object[1];
+			temp[0] = new Integer(3000+i);
+			try {
+				startNewAgent("box.BoxAgent", "BoxAgent" + (3000+i), temp);
+			} catch (StaleProxyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		
+		for (i = 0; i < map.no_of_boxes4; i++)
+		{
+			Object[] temp = new Object[1];
+			temp[0] = new Integer(4000+i);
+			try {
+				startNewAgent("box.BoxAgent", "BoxAgent" + (4000+i), temp);
+			} catch (StaleProxyException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	
+		}
+		
 		Object[] temp = new Object[1];
 		temp[0] = new Integer(map.no_of_goals);
 		try {
@@ -301,7 +338,11 @@ public class MapAgent extends Agent {
 		
 		Map r = new Map();
 		int movers = 10;
-		int boxes = 1000;
+		int boxes1 = 1000;
+		int boxes2 = 2000;
+		int boxes3 = 3000;
+		int boxes4 = 4000;
+		
 		int goals = 100;
 		
 		try{
@@ -359,9 +400,20 @@ public class MapAgent extends Agent {
 						r.map[i][j] = goals++;
 						break;
 						
-					case 'J':
-					case 'j':
-						r.map[i][j] = boxes++;
+					case '1':
+						r.map[i][j] = boxes1++;
+						break;
+						
+					case '2':
+						r.map[i][j] = boxes2++;
+						break;
+						
+					case '3':
+						r.map[i][j] = boxes3++;
+						break;
+						
+					case '4':
+						r.map[i][j] = boxes4++;
 						break;
 						
 					default:
@@ -375,7 +427,11 @@ public class MapAgent extends Agent {
 			    }catch (Exception e){//Catch exception if any
 			  System.err.println("Error: " + e.getMessage());
 			  }
-		r.no_of_boxes = boxes - 1000;
+		r.no_of_boxes1 = boxes1 - 1000;
+		r.no_of_boxes2 = boxes2 - 2000;
+		r.no_of_boxes3 = boxes3 - 3000;
+		r.no_of_boxes4 = boxes4 - 4000;
+
 		r.no_of_goals = goals - 100;
 		r.no_of_movers = movers - 10;
 		return r;
