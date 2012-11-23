@@ -57,14 +57,23 @@ public class Viewer implements MouseListener {
 					else if(map[i][j] == 2)
 						drawBackground(i, j);
 					
-					else if(map[i][j] >= 10 && map[i][j] <= 99)
+					else if(map[i][j] >= 10 && map[i][j] <= 49)
 						drawSolver(i, j);
+					
+					else if(map[i][j] >= 50 && map[i][j] <= 99)
+						drawSolverWithBox(i, j);
 					
 					else if(map[i][j] >= 100 && map[i][j] <= 999)
 						drawGoal(i, j);
 					
-					else if(map[i][j] >= 1000 && map[i][j] <= 9999 )
-						drawBox(i, j);
+					else if(map[i][j] >= 1000 && map[i][j] <= 1999 )
+						drawBox1(i, j);
+					else if(map[i][j] >= 2000 && map[i][j] <= 2999 )
+						drawBox2(i, j);
+					else if(map[i][j] >= 3000 && map[i][j] <= 3999 )
+						drawBox3(i, j);
+					else if(map[i][j] >= 4000 && map[i][j] <= 4999 )
+						drawBox4(i, j);
 				}
 			}
 		}
@@ -99,14 +108,23 @@ public class Viewer implements MouseListener {
 				else if(map[i][j] == 2)
 					drawBackground(i, j);
 				
-				else if(map[i][j] >= 10 && map[i][j] <= 99)
+				else if(map[i][j] >= 10 && map[i][j] <= 49)
 					drawSolver(i, j);
+				
+				else if(map[i][j] >= 50 && map[i][j] <= 99)
+					drawSolverWithBox(i, j);
 				
 				else if(map[i][j] >= 100 && map[i][j] <= 999)
 					drawGoal(i, j);
 				
-				else if(map[i][j] >= 1000 && map[i][j] <= 9999 )
-					drawBox(i, j);
+				else if(map[i][j] >= 1000 && map[i][j] <= 1999 )
+					drawBox1(i, j);
+				else if(map[i][j] >= 2000 && map[i][j] <= 2999 )
+					drawBox2(i, j);
+				else if(map[i][j] >= 3000 && map[i][j] <= 3999 )
+					drawBox3(i, j);
+				else if(map[i][j] >= 4000 && map[i][j] <= 4999 )
+					drawBox4(i, j);
 				
 			}
 		}
@@ -124,8 +142,27 @@ public class Viewer implements MouseListener {
 	}
 	
 
-	private void drawBox(int x, int y){
+	private void drawBox1(int x, int y){
 		ShowBox panel = new ShowBox(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	
+	private void drawBox2(int x, int y){
+		ShowBox1 panel = new ShowBox1(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	private void drawBox3(int x, int y){
+		ShowBox2 panel = new ShowBox2(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	private void drawBox4(int x, int y){
+		ShowBox3 panel = new ShowBox3(x*FIGURE_SIZES,y*FIGURE_SIZES);
 		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);
@@ -133,6 +170,13 @@ public class Viewer implements MouseListener {
 	
 	private void drawSolver(int x, int y){
 		ShowSolver panel = new ShowSolver(x*FIGURE_SIZES,y*FIGURE_SIZES);
+		graphics[x][y] = panel;
+		frame.add(panel);
+		frame.setVisible(true);
+	}
+	
+	private void drawSolverWithBox(int x, int y){
+		ShowSolverWithBox panel = new ShowSolverWithBox(x*FIGURE_SIZES,y*FIGURE_SIZES);
 		graphics[x][y] = panel;
 		frame.add(panel);
 		frame.setVisible(true);

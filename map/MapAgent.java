@@ -102,17 +102,28 @@ public class MapAgent extends Agent {
 		}
 	}
 	
-	void simulateRoute(String route, int wait)
+	void simulateRoute(String route, String mover, int wait)
 	{
-		int[] solverposition = findSolver(map.map);
+		int moverID = Integer.parseInt(mover);
+		int[] solverposition = findSolver(map.map, mover);
+
 		for (int i = 0; i<route.length(); i++)
 		{
 			if (route.charAt(i) == 'u' || route.charAt(i) == 'U')
 			{
-				if (map.map[solverposition[0]][solverposition[1]-1] >= 1000)
-					if (map.map[solverposition[0]][solverposition[1]-2] < 1000)
-						map.map[solverposition[0]][solverposition[1]-2] = map.map[solverposition[0]][solverposition[1]-1];
-				map.map[solverposition[0]][solverposition[1]-1] = 10;
+
+				if (map.map[solverposition[0]][solverposition[1]-1] >= 1000){
+						map.map[solverposition[0]][solverposition[1]-1] = moverID + 40;
+				}
+				else{
+					if (map.map[solverposition[0]][solverposition[1]] >= 50){
+						map.map[solverposition[0]][solverposition[1]-1] = moverID + 40;
+
+					}
+					else
+						map.map[solverposition[0]][solverposition[1]-1] = moverID;
+				}
+				
 				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
@@ -121,10 +132,17 @@ public class MapAgent extends Agent {
 			}
 			else if (route.charAt(i) == 'd' || route.charAt(i) == 'D')
 			{
-				if (map.map[solverposition[0]][solverposition[1]+1] >= 1000)
-					if (map.map[solverposition[0]][solverposition[1]+2] < 1000)
-						map.map[solverposition[0]][solverposition[1]+2] = map.map[solverposition[0]][solverposition[1]+1];
-				map.map[solverposition[0]][solverposition[1]+1] = 10;
+				if (map.map[solverposition[0]][solverposition[1]+1] >= 1000){
+						map.map[solverposition[0]][solverposition[1]+1] = moverID + 40;
+				}
+				else{
+					if (map.map[solverposition[0]][solverposition[1]] >= 50){
+						map.map[solverposition[0]][solverposition[1]+1] = moverID + 40;
+
+					}
+					else
+						map.map[solverposition[0]][solverposition[1]+1] = moverID;
+				}
 				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
@@ -133,10 +151,17 @@ public class MapAgent extends Agent {
 			}
 			else if (route.charAt(i) == 'l' || route.charAt(i) == 'L')
 			{
-				if (map.map[solverposition[0]-1][solverposition[1]] >= 1000)
-					if (map.map[solverposition[0]-2][solverposition[1]] < 1000)
-						map.map[solverposition[0]-2][solverposition[1]] = map.map[solverposition[0]-1][solverposition[1]];
-				map.map[solverposition[0]-1][solverposition[1]] = 10;
+				if (map.map[solverposition[0]-1][solverposition[1]] >= 1000){
+						map.map[solverposition[0]-1][solverposition[1]] = moverID + 40;
+				}
+				else{
+					if (map.map[solverposition[0]][solverposition[1]] >= 50){
+						map.map[solverposition[0]-1][solverposition[1]] = moverID + 40;
+
+					}
+					else
+						map.map[solverposition[0]-1][solverposition[1]] = moverID;
+				}
 				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
@@ -145,10 +170,17 @@ public class MapAgent extends Agent {
 			}
 			else if (route.charAt(i) == 'r' || route.charAt(i) == 'R')
 			{
-				if (map.map[solverposition[0]+1][solverposition[1]] >= 1000)
-					if (map.map[solverposition[0]+2][solverposition[1]] < 1000)
-						map.map[solverposition[0]+2][solverposition[1]] = map.map[solverposition[0]+1][solverposition[1]];
-				map.map[solverposition[0]+1][solverposition[1]] = 10;
+				if (map.map[solverposition[0]+1][solverposition[1]] >= 1000){
+						map.map[solverposition[0]+1][solverposition[1]] = moverID + 40;
+				}
+				else{
+					if (map.map[solverposition[0]][solverposition[1]] >= 50){
+						map.map[solverposition[0]+1][solverposition[1]] = moverID + 40;
+
+					}
+					else
+						map.map[solverposition[0]+1][solverposition[1]] = moverID;
+				}
 				if (original_map.map[solverposition[0]][solverposition[1]] >= 100 && original_map.map[solverposition[0]][solverposition[1]] < 1000)
 					map.map[solverposition[0]][solverposition[1]] = original_map.map[solverposition[0]][solverposition[1]];
 				else
@@ -157,6 +189,7 @@ public class MapAgent extends Agent {
 			}
 			
 			viewer.updateMap(map.map);
+					
 			if (wait != 0)
 			{
 				try {
@@ -168,14 +201,33 @@ public class MapAgent extends Agent {
 			}
 
 		}
-	}
+		
+		for(int i = 0; i < map.map.length ; i++)
+			for(int j = 0; j < map.map[0].length; j++)
+				if(map.map[i][j] > 49 && map.map[i][j] < 100 && original_map.map[i][j] > 99 && original_map.map[i][j] < 1000)
+					map.map[i][j] -= 40;
+		/*
+		for(int i = 0; i < map.map.length ; i++){
+			for(int j = 0; j < map.map[0].length; j++){
+				System.out.print(map.map[i][j] + " ");
+			}
+			System.out.println("");
+		}*/
+		
+
+				
+		
+
+	} 
 	
-	private int[] findSolver(int[][] map)
+	
+	
+	private int[] findSolver(int[][] map, String mover)
 	{
 		int[] r = new int[2];
 		for (int i = 0; i<map.length; i++)
 			for (int j = 0; j<map[0].length; j++)
-				if (map[i][j] == 10)
+				if (map[i][j] == Integer.parseInt(mover) || map[i][j] == Integer.parseInt(mover) + 40 )
 				{
 					r[0] = i;
 					r[1] = j;
@@ -225,7 +277,10 @@ public class MapAgent extends Agent {
 			if (msg != null) {
 				if (msg.getConversationId().equals("map_update"))
 				{
-					simulateRoute(msg.getContent(), 0);
+					String route = msg.getContent().substring(0, msg.getContent().length() - 2);
+					String mover = msg.getContent().substring(msg.getContent().length() - 2, msg.getContent().length());
+					simulateRoute(route, mover, 0);
+					//System.out.println("Mover: " + mover + " Route: " + route);
 					
 					ACLMessage update = new ACLMessage(ACLMessage.INFORM);
 					for (int j = 0; j < map_subscribers.size(); j++)

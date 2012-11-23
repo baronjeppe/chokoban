@@ -1,9 +1,13 @@
-7 8 1
-XXXXXXX
-XM....X
-X.....X
-XM....X
-X.....X
-X1234.X
-XGGGG.X
-XXXXXXX
+17 12 1
+XXXXXXXXXXXXXXXXX
+X.M.GM.GM.GM..G.X
+X...M...........X
+X...XXXXXXX.....X
+X...............X
+X...............X
+X...............X
+X...............X
+X...............X
+X...............X
+X..11223344.....X
+XXXXXXXXXXXXXXXXX

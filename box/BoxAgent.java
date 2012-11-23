@@ -27,6 +27,7 @@ import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 import timer.Timer;
+import tools.Astar;
 import box.nodeHashing.NodeHashTable;
 import box.Node;
 import box.State;
@@ -34,10 +35,12 @@ import map.Map;
 import map.Viewer;
 import jade.core.AID;
 import jade.core.Agent;
+import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
+import jade.domain.df;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.domain.FIPAAgentManagement.ServiceDescription;
 import jade.lang.acl.ACLMessage;
@@ -77,6 +80,9 @@ public class BoxAgent extends Agent {
 			// Add the behaviour serving queries from mover agents
 			addBehaviour(new RoutePriceRequestsServer());
 			
+			// Add behaviour for deleting the box
+			addBehaviour(new DeleteServer());
+			
 			// Add the behaviour serving queries from mover agents
 			addBehaviour(new RouteRequestServer());
 			
@@ -105,7 +111,7 @@ public class BoxAgent extends Agent {
 							
 						}
 						else
-							System.out.println("FAILED");
+							System.out.println("FAILED - FOund no mapAgent");
 						//System.out.println("mapAgent: " + mapAgent.getName());
 					}
 					catch (FIPAException fe) {
@@ -216,24 +222,54 @@ public class BoxAgent extends Agent {
 		return ret;
 	}
 	
-	String calcRoute()
+	int[] findGoal(int[][] map){
+		int goals = 0;
+		
+		for(int i = 0; i < map.length; i++){
+			for(int j = 0; j < map[0].length; j++){
+				if(map[i][j] >= 100 && map[i][j] < 1000){
+					goals += 2;
+				}
+			}
+		}
+		
+		int[] ret = new int[goals];
+		int goalTemp = 0;
+		
+		for(int i = 0; i < map.length; i++){
+			for(int j = 0; j < map[0].length; j++){
+				if(map[i][j] >= 100 && map[i][j] < 1000){
+					ret[goalTemp] = i;
+					ret[goalTemp + 1] = j;
+					goalTemp += 2;
+				}
+			}
+		}
+		
+		return ret;
+	}
+	
+	String calcRoute(String sender)
 	{
 		String ret;
 		int[] mover = new int[2];
+		int[] box = new int[2];
+		int senderID = Integer.parseInt(sender);
+		
 		
 		int[][] solverMap = new int[map.map_width][map.map_height];
-		
+		boolean foundID = false;
 		
 		for (int i = 0; i < map.map_width; i++)
 			for (int j = 0; j < map.map_height; j++)
 			{
 				if (map.map[i][j] >= 1000)
 					solverMap[i][j] = 1;
-				else if (map.map[i][j] == 10)
+				else if (map.map[i][j] == senderID)
 				{
 					mover[0] = i;
 					mover[1] = j;
-					solverMap[i][j] = 10;
+					solverMap[i][j] = senderID;
 				}
 				else if(map.map[i][j] >= 100 && map.map[i][j] < 1000){
 					solverMap[i][j] = 100;
@@ -241,20 +277,55 @@ public class BoxAgent extends Agent {
 				else
 					solverMap[i][j] = map.map[i][j];
 				
-				if (map.map[i][j] == id)
+				if (map.map[i][j] == id){
 					solverMap[i][j] = 1000;
+					box[0] = i;
+					box[1] = j;
+					foundID = true;
+				}
 			}
-		/*
-		for (int i = 0; i < solverMap[0].length; i++){
-			for (int j = 0; j < solverMap.length; j++){
-				System.out.print(solverMap[j][i] + "\t");
+		
+		if(foundID){
+			ret = Astar.calcRoute(map.map, mover[0], mover[1], box[0], box[1]);
+			int[] goal = findGoal(map.map);
+			
+			//ret+= Astar.calcRoute(map.map, box[0], box[1], goal[0], goal[1]);
+			
+			ret += Astar.calcRouteToGoal(map.map, box[0], box[1], goal);
+						
+			//ret = solve(solverMap,mover);
+			
+			return ret;
+		}
+		else{
+			//doDelete();
+			return "-";
+		}
+	
+	}
+	
+	private class DeleteServer extends Behaviour{
+
+		@Override
+		public void action() {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CANCEL);
+			ACLMessage msg = myAgent.receive(mt);
+			if (msg != null) {
+				if(msg.getContent().equals("terminate"))
+					System.out.println("DELETE");
+					doDelete();
 			}
-			System.out.println("");
-		}*/
+			else {
+				block();
+			}
+		}
+
+		@Override
+		public boolean done() {
+			// TODO Auto-generated method stub
+			return false;
+		}
 		
-		ret = solve(solverMap,mover);
-		
-		return ret;
 	}
 	
 	/**
@@ -272,7 +343,9 @@ public class BoxAgent extends Agent {
 				// Calc route price and propose
 				reply.setPerformative(ACLMessage.PROPOSE);
 				reply.setConversationId("route_conv");
-				reply.setContent(calcRoute());
+				String sender = msg.getSender().getName().substring(10,12);
+				//System.out.println("Found mover agent number:" + sender);
+				reply.setContent(calcRoute(sender));
 				//System.out.println(myAgent.getName() + " has been requested");
 
 				myAgent.send(reply);
@@ -324,7 +397,8 @@ public class BoxAgent extends Agent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setConversationId("route_conv");
-				reply.setContent(calcRoute());
+				String sender = msg.getSender().getName().substring(10,12);
+				reply.setContent(calcRoute(sender));
 
 				myAgent.send(reply);
 				

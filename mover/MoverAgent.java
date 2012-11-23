@@ -98,34 +98,39 @@ public class MoverAgent extends Agent {
 							
 						}
 						else
-							System.out.println("FAILED");
+							System.out.println("FAILED - Found no MapAgents");
 						//System.out.println("mapAgent: " + mapAgent.getName());
 					}
 					catch (FIPAException fe) {
 						fe.printStackTrace();
 					}
 					
-					template = new DFAgentDescription();
-					sd = new ServiceDescription();
+				}
+			} );
+			
+			/*addBehaviour(new OneShotBehaviour() {
+				
+				@Override
+				public void action() {
+					DFAgentDescription template = new DFAgentDescription();
+					ServiceDescription sd = new ServiceDescription();
 					sd.setType("goal-agent");
 					template.addServices(sd);
 					try {
 						DFAgentDescription[] result = DFService.search(myAgent, template); 
 						if (result.length > 0)
-						{
 							goalAgent = result[0].getName();
-							System.out.println(goalAgent.getName());
-							
-						}
+						
 						else
-							System.out.println("FAILED");
+							System.out.println("FAILED - Found no MapAgents");
 						//System.out.println("mapAgent: " + mapAgent.getName());
 					}
 					catch (FIPAException fe) {
 						fe.printStackTrace();
 					}
+					
 				}
-			} );
+			}) ;*/
 		
 		}
 		else {
@@ -230,13 +235,15 @@ public class MoverAgent extends Agent {
 							if(bestRoute == null){
 								System.out.println("null best route");
 							}
+							else{
+								MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+								ACLMessage order = new ACLMessage(ACLMessage.CFP);
+								order.addReceiver(goalAgent);
+								order.setContent(bestRoute + "-" + boxWithBestRoute.getName());
+								order.setConversationId("route_req");
+								myAgent.send(order);
+							}
 
-							MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-							ACLMessage order = new ACLMessage(ACLMessage.CFP);
-							order.addReceiver(goalAgent);
-							order.setContent(bestRoute);
-							order.setConversationId("route_req");
-							myAgent.send(order);
 							
 							step = 2; 
 							
@@ -342,7 +349,8 @@ public class MoverAgent extends Agent {
 				String title = msg.getContent();
 				ACLMessage reply = msg.createReply();
 				goalMessage = msg;
-				System.out.println(getName() + " recieved request for finding boxroute");
+				goalAgent = msg.getSender();
+				//System.out.println(getName() + " recieved request for finding boxroute");
 
 				// Calc route price and propose
 				reply.setPerformative(ACLMessage.CFP);

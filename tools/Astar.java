@@ -94,13 +94,13 @@ public class Astar {
 			
 			open_list.remove(0);
 		}
-		/*
+		
 		for (int i = 0; i < map[0].length; i++){
 			for (int j = 0; j < map.length; j++){
 				System.out.print(squares[j][i].price + "\t");
 			}
 			System.out.println("");
-		}*/	
+		}
 		
 		
 		for(int i = 0; i < map[0].length; i++)
@@ -167,13 +167,13 @@ public class Astar {
 			
 			open_list.remove(0);
 		}
-		/*
+		
 		for (int i = 0; i < map[0].length; i++){
 			for (int j = 0; j < map.length; j++){
 				System.out.print(squares[j][i].price + "\t");
 			}
 			System.out.println("");
-		}*/	
+		}
 		
 		
 		for(int i = 0; i < map[0].length; i++)
@@ -233,11 +233,90 @@ public class Astar {
 			open_list.remove(0);
 		}
 		
+		/*for (int i = 0; i<map.length; i++){
+			for (int j = 0; j<map[0].length;j++){
+				System.out.print(squares[i][j].price + "\t");
+				}	
+			System.out.println("");
+			}
+		*/
+		
 		String ret = RouteToString(squares, start_x, start_y);
 				
 		return ret;
 		
 	}
+	
+	public static String calcRouteToGoal(int[][] map, int start_x, int start_y, int[] goals)
+	{
+		Square[][] squares = new Square[map.length][map[0].length];
+		
+		for (int i = 0; i<map.length; i++)
+			for (int j = 0; j<map[0].length;j++)
+				squares[i][j] = new Square(i,j,10000);
+		
+		int goal_x, goal_y;
+		
+		for(int k = 0; k < goals.length ; k+= 2){
+			ArrayList<Square> open_list = new ArrayList<Square>();
+			
+			goal_x = goals[k];
+			goal_y = goals[k+1];
+			
+			squares[goal_x][goal_y].price = 0;
+			open_list.add(squares[goal_x][goal_y]);
+			
+			while(!open_list.isEmpty()){
+				
+				Square curSq = open_list.get(0);
+				
+				// up
+				if (map[curSq.x][curSq.y-1] == 2)
+					if(squares[curSq.x][curSq.y-1].price > curSq.price+1)
+					{
+						squares[curSq.x][curSq.y-1].price = curSq.price+1;
+						open_list.add(squares[curSq.x][curSq.y-1]);
+					}
+				// down
+				if (map[curSq.x][curSq.y+1] == 2)
+					if(squares[curSq.x][curSq.y+1].price > curSq.price+1)
+					{
+						squares[curSq.x][curSq.y+1].price = curSq.price+1;
+						open_list.add(squares[curSq.x][curSq.y+1]);
+					}
+				// left
+				if (map[curSq.x-1][curSq.y] == 2)
+					if(squares[curSq.x-1][curSq.y].price > curSq.price+1)
+					{
+						squares[curSq.x-1][curSq.y].price = curSq.price+1;
+						open_list.add(squares[curSq.x-1][curSq.y]);
+					}
+				// right
+				if (map[curSq.x+1][curSq.y] == 2)
+					if(squares[curSq.x+1][curSq.y].price > curSq.price+1)
+					{
+						squares[curSq.x+1][curSq.y].price = curSq.price+1;
+						open_list.add(squares[curSq.x+1][curSq.y]);
+					}
+				
+				open_list.remove(0);
+			}
+			
+			/*for (int i = 0; i<map.length; i++){
+				for (int j = 0; j<map[0].length;j++){
+					System.out.print(squares[i][j].price + "\t");
+					}	
+				System.out.println("");
+				}
+			*/
+		}
+		
+		String ret = RouteToString(squares, start_x, start_y);
+				
+		return ret;
+		
+	}
+	
 	
 	public static int calcPrice(int[][] map, int[][] heuristic)
 	{

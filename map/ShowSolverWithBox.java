@@ -8,17 +8,17 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 
-public class ShowBox extends JComponent {
+public class ShowSolverWithBox extends JComponent {
 
 	private static final long serialVersionUID = 1L;
 	private int x,y;
 		BufferedImage image;
-		public ShowBox(int x_, int y_) {
+		public ShowSolverWithBox(int x_, int y_) {
 			x = x_;
 			y = y_;
 		try {
 		
-		String imageName= "map/box4.jpg";
+		String imageName= "map/solverwbox.jpg";
 		File input = new File(imageName);
 		image = ImageIO.read(input);
 		} catch (IOException ie) {
