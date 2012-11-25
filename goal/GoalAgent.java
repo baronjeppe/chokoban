@@ -54,6 +54,7 @@ public class GoalAgent extends Agent {
 	int step = 0;
 	int[] sequence = {1,4,3,2,1,2,3,4};
 	int sequenceCounter = 0;
+	int ticks = 0;
 
 	// Put agent initializations here
 	protected void setup() {
@@ -82,10 +83,10 @@ public class GoalAgent extends Agent {
 			
 			addBehaviour(new MapSubscriber());
 			
-			addBehaviour(new TickerBehaviour(this, 2000) {
-				
+			addBehaviour(new TickerBehaviour(this, 500) {				
 				@Override
 				protected void onTick() {
+					ticks++;
 					
 					// Find moverAgents in the map
 					DFAgentDescription template = new DFAgentDescription();
@@ -109,7 +110,8 @@ public class GoalAgent extends Agent {
 					
 					step = 0;
 
-					addBehaviour(new RequestBoxMovingPerformer());
+					if(ticks > 20)
+						addBehaviour(new RequestBoxMovingPerformer());
 					
 				}
 			});
@@ -187,157 +189,194 @@ public class GoalAgent extends Agent {
 		MessageTemplate mt; // The template to receive replies
 		int replyCnt = 0;
 		String bestRoute = "";
+		String bestReply = "";
+		ACLMessage moverReply;
 		AID moverWithBestRoute;
 		String boxWithBestRoute;
 		
-		public void walkRoute(String route, String mover)
-		{			
-			//System.out.println("Walk route: " + route);
-
-			for (int i = 0; i<route.length(); i++)
-			{
-				ACLMessage order = new ACLMessage(ACLMessage.INFORM);
-				order.addReceiver(mapAgent);
-				//System.out.println("Trying to walk with mover: " + mover.substring(10,12));
-				order.setContent(route.substring(i, i+1) + mover.substring(10,12) );
-				//System.out.println(route.substring(i, i+1));
-				order.setConversationId("map_update");
-				order.setReplyWith("map_update"+System.currentTimeMillis());
-				myAgent.send(order);
-				
-				try {
-					Thread.sleep(100);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
+		
 
 		@Override
 		public void action() {
-			//Random random = new Random();
+			Random random = new Random();
 			//SecureRandom random = new SecureRandom();
-			//Integer randomInt = random.nextInt(4) + 1;
-			Integer randomInt = sequence[sequenceCounter];
-			switch (stepz) {
-			case 0:
-				System.out.println(randomInt);
-				// Send the cfp to all boxes
-				ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-				for (int i = 0; i < moverAgents.length; ++i) {
-					cfp.addReceiver(moverAgents[i]);
-				} 
-				cfp.setContent(randomInt.toString());
-				cfp.setConversationId("route_req");
-				cfp.setReplyWith("cfp"+System.currentTimeMillis()); // Unique value
-				myAgent.send(cfp);
-				// Prepare the template to get proposals
-				mt = MessageTemplate.and(MessageTemplate.MatchConversationId("route_req"),
-						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-				replyCnt = 0;
-				stepz = 1;
-				bestRoute = "";
-				
-			case 1:
-				mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-				ACLMessage reply1 = myAgent.receive(mt);
-				if (reply1 != null) {
-					if (reply1.getConversationId().equals("route_req"))
-					{
-						if (reply1.getPerformative() == ACLMessage.CFP && !reply1.getContent().equals("-")) {
-							// This is an offer 
-							//int price = reply.getContent().length();
-							//System.out.println("Content: " + reply1.getContent() + " Recieved from: " + reply1.getSender().getName());
-							//walkRoute(reply1.getContent());
-							replyCnt++;
-							
-							 /* String to split. */
-							  String str = reply1.getContent();
-							  String[] temp;
-							 
-							  /* delimiter */
-							  String delimiter = "-";
-							  /* given string will be split by the argument delimiter provided. */
-							  temp = str.split(delimiter);
-							
-							if(bestRoute.equals("") || bestRoute.length() > reply1.getContent().length()){
-								bestRoute = temp[0];
-								moverWithBestRoute = reply1.getSender();
-								boxWithBestRoute = temp[1];
-							}
-								
-						}
-					}
+			Integer randomInt = random.nextInt(4) + 1;
+			//Integer randomInt = sequence[sequenceCounter];
+			
+			DFAgentDescription template = new DFAgentDescription();
+			ServiceDescription sd = new ServiceDescription();
+			sd.setType("box-route");
+			template.addServices(sd);
+			try {
+				DFAgentDescription[] result = DFService.search(myAgent, template); 
+				//System.out.println("Found the following boxes:");
+				boxAgents = new AID[result.length];
+				for (int i = 0; i < result.length; ++i) {
+					boxAgents[i] = result[i].getName();
+					//System.out.println(boxAgents[i].getName());
 				}
-				
-				if(moverAgents.length <= replyCnt){
-					String lastMove = bestRoute.substring(bestRoute.length()-1, bestRoute.length());
-					switch (lastMove) {
-					case "u":
-					case "U":
-						bestRoute += "D";
-						break;
-						
-					case "d":
-					case "D":
-						bestRoute += "U";
-						break;
-						
-					case "r":
-					case "R":
-						bestRoute += "L";
-						break;
-						
-					case "l":
-					case "L":
-						bestRoute += "R";
-						break;
-
-					default:
-						break;
-					}
-					stepz = 2;
-					System.out.println("Best route: " + bestRoute + " Recieved from: " + moverWithBestRoute);
-					System.out.println(boxWithBestRoute);
-					int[] box = findBox(map.map, Integer.parseInt(boxWithBestRoute.substring(8,12)));
-					int[] goal = findGoal(map.map);
-					//bestRoute += Astar.calcRoute(map.map, box[0], box[1], goal[0], goal[1]);
+			}
+			catch (FIPAException fe) {
+				fe.printStackTrace();
+			}
+			
+			if(boxAgents.length == 0){
+				System.out.println("Goal agent terminating, due to no more boxes");
+				doDelete();
+			}
+			
+			boolean foundBox = false;
+			
+			while(!foundBox){
+				randomInt = random.nextInt(4)+1;
+				for(int i = 0; i < boxAgents.length; i++){
+					if(Integer.parseInt(boxAgents[i].getName().substring(8,9)) == randomInt)
+						foundBox = true;
+				}
+			}
+			
+			if(true){
+				switch (stepz) {
+				case 0:
+					System.out.println(randomInt);
+					// Send the cfp to all boxes
+					ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
+					for (int i = 0; i < moverAgents.length; ++i) {
+						cfp.addReceiver(moverAgents[i]);
+					} 
+					cfp.setContent(randomInt.toString());
+					cfp.setConversationId("route_req");
+					cfp.setReplyWith("cfp"+System.currentTimeMillis()); // Unique value
+					myAgent.send(cfp);
+					// Prepare the template to get proposals
+					mt = MessageTemplate.and(MessageTemplate.MatchConversationId("route_req"),
+							MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
+					replyCnt = 0;
+					stepz = 1;
+					bestRoute = "";
 					
-					// Find boxagent that has to be terminated
-					DFAgentDescription template = new DFAgentDescription();
-					ServiceDescription sd = new ServiceDescription();
-					sd.setType("box-route");
-					template.addServices(sd);
-					try {
-						DFAgentDescription[] result = DFService.search(myAgent, template); 
-						if (result.length > 0){
-							for(int i = 0; i < result.length ; i++){
-							//	System.out.println("Trrying to match: " + boxWithBestRoute + " With: " + result[i].getName());
-								if(result[i].getName().equals(boxWithBestRoute)){
-									ACLMessage mes = new ACLMessage(ACLMessage.CANCEL);
-									mes.addReceiver(result[i].getName());
-									mes.setContent("terminate");
-									myAgent.send(mes);
-
+				case 1:
+					mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+					ACLMessage reply1 = myAgent.receive(mt);
+					if (reply1 != null) {
+						if (reply1.getConversationId().equals("route_req"))
+						{
+							if (reply1.getPerformative() == ACLMessage.CFP) {
+								replyCnt++;
+								System.out.println("Sender: " + reply1.getSender().getName() + " send route: " + reply1.getContent());
+								if(!reply1.getContent().equals("-")){
+									// This is an offer 
+									//int price = reply.getContent().length();
+									//System.out.println("Content: " + reply1.getContent() + " Recieved from: " + reply1.getSender().getName());
+									//walkRoute(reply1.getContent());
+									
+									 /* String to split. */
+									  String str = reply1.getContent();
+									  String[] temp;
+									 
+									  /* delimiter */
+									  String delimiter = "-";
+									  /* given string will be split by the argument delimiter provided. */
+									  temp = str.split(delimiter);
+									
+									if(bestRoute.equals("") || bestRoute.length() > (temp[0]+temp[1]).length()+1){
+										bestRoute = temp[0] + "-" + temp[1];
+										moverWithBestRoute = reply1.getSender();
+										boxWithBestRoute = temp[2];
+										bestReply = temp[1];
+										//System.out.println(temp[2]);
+										moverReply = reply1.createReply();
+									}
 								}
 							}
-							
 						}
-						else
-							System.out.println("FAILED - Found no box agents");
-						//System.out.println("mapAgent: " + mapAgent.getName());
-					}
-					catch (FIPAException fe) {
-						fe.printStackTrace();
 					}
 					
-					
-					walkRoute(bestRoute, moverWithBestRoute.getName());
-					sequenceCounter++;
+					if(moverAgents.length <= replyCnt) {
+						if(!bestRoute.equals("")){
+							String lastMove = bestRoute.substring(bestRoute.length()-1, bestRoute.length());
+							switch (lastMove) {
+							case "u":
+							case "U":
+								bestReply += "D";
+								break;
+								
+							case "d":
+							case "D":
+								bestReply += "U";
+								break;
+								
+							case "r":
+							case "R":
+								bestReply += "L";
+								break;
+								
+							case "l":
+							case "L":
+								bestReply += "R";
+								break;
+		
+							default:
+								break;
+							}
+							stepz = 2;
+							System.out.println("Best route: " + bestRoute + " Recieved from: " + moverWithBestRoute);
+							System.out.println(boxWithBestRoute);
+							//int[] box = findBox(map.map, Integer.parseInt(boxWithBestRoute.substring(8,12)));
+							//int[] goal = findGoal(map.map);
+							//bestRoute += Astar.calcRoute(map.map, box[0], box[1], goal[0], goal[1]);
+							
+							//Send reply to mover that it has to move
+							template = new DFAgentDescription();
+							moverReply.setContent(bestReply);
+							myAgent.send(moverReply);
+							moverReply.removeReceiver(moverWithBestRoute);
+							
+							for(int i = 0; i < moverAgents.length; i++){
+								if(!moverAgents[i].equals(moverWithBestRoute))
+									moverReply.addReceiver(moverAgents[i]);
+							}
+							moverReply.setContent("");
+							myAgent.send(moverReply);
+							
+							// Find boxagent that has to be terminated
+							sd = new ServiceDescription();
+							sd.setType("box-route");
+							template.addServices(sd);
+							try {
+								DFAgentDescription[] result = DFService.search(myAgent, template); 
+								if (result.length > 0){
+									for(int i = 0; i < result.length ; i++){
+									//	System.out.println("Trrying to match: " + boxWithBestRoute + " With: " + result[i].getName());
+										if(result[i].getName().equals(boxWithBestRoute)){
+											ACLMessage mes = new ACLMessage(ACLMessage.CANCEL);
+											mes.addReceiver(result[i].getName());
+											mes.setContent("terminate");
+											myAgent.send(mes);
+		
+										}
+									}
+									
+								}
+								else
+									System.out.println("FAILED - Found no box agents");
+								//System.out.println("mapAgent: " + mapAgent.getName());
+							}
+							catch (FIPAException fe) {
+								fe.printStackTrace();
+							}
+							
+							//walkRoute(bestRoute, moverWithBestRoute.getName());
+							sequenceCounter++;
+						}
+						break;
+						
+						
+					}
 				}
-				
-				break;
+			}
+			else	{
+				System.out.println("Asked for nonexisting box");
 			}
 		}
 

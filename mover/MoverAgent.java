@@ -40,15 +40,23 @@ import jade.lang.acl.UnreadableException;
 
 public class MoverAgent extends Agent {
 	private int id;
+	private String queue = "";
 	private AID[] boxAgents;
 	private AID mapAgent;
 	private AID goalAgent;
 	private ACLMessage goalMessage;
 	private Map map;
+	private boolean findMyself = false;
+	private Integer[] endPos;
+	private Integer[] curPos = new Integer[2];
 	// Put agent initializations here
 	protected void setup() {
 		// Printout a welcome message
 		System.out.println("Hallo! BoxAgent " + getAID().getName() + " is running.");
+		
+		endPos = new Integer[2];
+		endPos[0] = 0;
+		endPos[1] = 1;
 
 		// Loading arguments
 		Object[] args = getArguments();
@@ -68,12 +76,11 @@ public class MoverAgent extends Agent {
 				fe.printStackTrace();
 			}
 			
-			
 			id = Integer.parseInt(args[0].toString());
 			
 			addBehaviour(new MapSubscriber());
-		
-			addBehaviour(new RequestBoxRouteServer());
+					
+			addBehaviour(new MoveBehaviour(this, 25));
 						
 			// Find map-agent and subscriber to map
 			addBehaviour(new OneShotBehaviour(this) {
@@ -107,6 +114,9 @@ public class MoverAgent extends Agent {
 					
 				}
 			} );
+			
+			addBehaviour(new RequestBoxRouteServer());
+
 			
 			/*addBehaviour(new OneShotBehaviour() {
 				
@@ -158,6 +168,20 @@ public class MoverAgent extends Agent {
 						e.printStackTrace();
 					}
 					//System.out.println("map_height:" + map.map_height);
+					if(!findMyself){
+						findMyself = true;
+						for(int i = 0; i < map.map.length; i++)
+							for(int j = 0; j < map.map[0].length; j++){
+								if(map.map[i][j] == id){
+									endPos[0] = j;
+									endPos[1] = i;
+									curPos[0] = j;
+									curPos[1] = i;
+								}
+									
+							}
+					}
+						
 				}
 
 			}
@@ -193,23 +217,27 @@ public class MoverAgent extends Agent {
 		public void action() {
 			switch (step) {
 			case 0:
-				askedBoxes = 0;
-				// Send the cfp to all boxes
-				ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
-				for (int i = 0; i < boxAgents.length; ++i) {
-					if(boxAgents[i].getName().substring(8,9).equals(boxTypes)){
-						cfp.addReceiver(boxAgents[i]);
-						askedBoxes++;
-					}
-				} 
-				cfp.setContent("Request_route_price");
-				cfp.setConversationId("route_conv");
-				cfp.setReplyWith("cfp"+System.currentTimeMillis()); // Unique value
-				myAgent.send(cfp);
-				// Prepare the template to get proposals
-				mt = MessageTemplate.and(MessageTemplate.MatchConversationId("route_conv"),
-						MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
-				step = 1;
+					askedBoxes = 0;
+					// Send the cfp to all boxes
+					ACLMessage cfp = new ACLMessage(ACLMessage.CFP);
+					for (int i = 0; i < boxAgents.length; ++i) {
+						if(boxAgents[i].getName().substring(8,9).equals(boxTypes)){
+							cfp.addReceiver(boxAgents[i]);
+							askedBoxes++;
+						}
+					} 
+					
+					cfp.setContent("Request_route_price-" + endPos[1].toString() + "-" + endPos[0].toString());
+					System.out.println("Content: " + cfp.getContent());
+					cfp.setConversationId("route_conv");
+					cfp.setReplyWith("cfp"+System.currentTimeMillis()); // Unique value
+					myAgent.send(cfp);
+					// Prepare the template to get proposals
+					mt = MessageTemplate.and(MessageTemplate.MatchConversationId("route_conv"),
+							MessageTemplate.MatchInReplyTo(cfp.getReplyWith()));
+					step = 1;
+				
+					
 				break;
 			case 1:
 				// Receive all proposals/refusals from boxes
@@ -231,18 +259,19 @@ public class MoverAgent extends Agent {
 
 						repliesCnt++;
 						if (repliesCnt >= askedBoxes) {
+							ACLMessage order = null;
 							// We received all replies
-							if(bestRoute == null){
-								System.out.println("null best route");
+							if(bestRoute != null){
+								MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+								order = new ACLMessage(ACLMessage.CFP);
+								order.addReceiver(goalAgent);
+								order.setContent(queue + "-" +  bestRoute + "-" + boxWithBestRoute.getName());
+								order.setConversationId("route_req");
 							}
 							else{
-								MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-								ACLMessage order = new ACLMessage(ACLMessage.CFP);
-								order.addReceiver(goalAgent);
-								order.setContent(bestRoute + "-" + boxWithBestRoute.getName());
-								order.setConversationId("route_req");
-								myAgent.send(order);
+								order.setContent("-");
 							}
+							myAgent.send(order);
 
 							
 							step = 2; 
@@ -258,7 +287,7 @@ public class MoverAgent extends Agent {
 				// Request the route from the selected box
 				ACLMessage order = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 				order.addReceiver(boxWithBestRoute);
-				order.setContent("Request_route");
+				order.setContent("Request_route" + "-" + endPos[1] + "-" + endPos[0]);
 				order.setConversationId("route_conv");
 				order.setReplyWith("route_request"+System.currentTimeMillis());
 				myAgent.send(order);
@@ -307,6 +336,108 @@ public class MoverAgent extends Agent {
 		}
 	}  // End of inner class RequestPerformer
 	
+	private class MoveBehaviour extends TickerBehaviour{
+		
+		public MoveBehaviour(Agent a, long period) {
+			super(a, period);
+			// TODO Auto-generated constructor stub
+		}
+
+		private MessageTemplate mt; // The template to receive replies
+		
+		public void walkRoute(String route, String mover)
+		{			
+			//System.out.println("Walk route: " + route);
+
+			for (int i = 0; i<route.length(); i++)
+			{
+				ACLMessage order = new ACLMessage(ACLMessage.INFORM);
+				order.addReceiver(mapAgent);
+				//System.out.println("Trying to walk with mover: " + mover.substring(10,12));
+				order.setContent(route.substring(i, i+1) + id );
+				//System.out.println(route.substring(i, i+1));
+				order.setConversationId("map_update");
+				order.setReplyWith("map_update"+System.currentTimeMillis());
+				myAgent.send(order);
+			}
+		}
+
+		@Override
+		protected void onTick() {
+			if(queue.length() > 0){
+				String nexMove = queue.substring(0,1);
+				
+				int[] temp = {curPos[0], curPos[1]};
+				
+				switch(nexMove) {
+				case "u":
+				case "U":
+					temp[0]--;
+					break;
+					
+				case "d":
+				case "D":
+					temp[0]++;
+					break;
+					
+				case "r":
+				case "R":
+					temp[1]++;
+					break;
+					
+				case "l":
+				case "L":
+					temp[1]--;
+					break;
+				
+				}
+				
+				if(map.map[temp[1]][temp[0]] >= 10 && map.map[temp[1]][temp[0]] < 100){
+					switch(nexMove) {
+					case "u":
+					case "U":
+						if(map.map[curPos[1]-1][curPos[0]] == 2 || (map.map[curPos[1]-1][curPos[0]] >= 100 && map.map[curPos[1]-1][curPos[0]] < 1000)) 
+							if(map.map[curPos[1]-1][curPos[0]-1] == 2 || (map.map[curPos[1]-1][curPos[0]-1] >= 100 && map.map[curPos[1]-1][curPos[0]-1] < 1000)){
+								queue = "LUR" + queue.substring(1);
+							}
+						
+						break;
+						
+					case "d":
+					case "D":
+						if(map.map[curPos[1]+1][curPos[0]] == 2 || (map.map[curPos[1]+1][curPos[0]] >= 100 && map.map[curPos[1]+1][curPos[0]] < 1000)) 
+							if(map.map[curPos[1]+1][curPos[0]+1] == 2 || (map.map[curPos[1]+1][curPos[0]+1] >= 100 && map.map[curPos[1]+1][curPos[0]+1] < 1000)) 
+								queue = "RDL" + queue.substring(1);
+						break;
+						
+					case "r":
+					case "R":
+						if(map.map[curPos[1]][curPos[0]-1] == 2 || (map.map[curPos[1]][curPos[0]-1] >= 100 && map.map[curPos[1]][curPos[0]-1] < 1000)) 
+							if(map.map[curPos[1]+1][curPos[0]-1] == 2 || (map.map[curPos[1]+1][curPos[0]-1] >= 100 && map.map[curPos[1]+1][curPos[0]-1] < 1000)) 
+								queue = "URD" + queue.substring(1);
+						break;
+						
+					case "l":
+					case "L":
+						if(map.map[curPos[1]][curPos[0]+1] == 2 || (map.map[curPos[1]][curPos[0]+1] >= 100 && map.map[curPos[1]][curPos[0]+1] < 1000)) 
+							if(map.map[curPos[1]-1][curPos[0]+1] == 2 || (map.map[curPos[1]-1][curPos[0]+1] >= 100 && map.map[curPos[1]-1][curPos[0]+1] < 1000)) 
+								queue = "DLU" + queue.substring(1);
+						break;
+					}
+				}
+				else{
+					walkRoute(queue.substring(0,1), myAgent.getName());
+					queue = queue.substring(1);
+					curPos[0] = temp[0];
+					curPos[1] = temp[1];
+
+				}
+			}
+			
+		}
+		
+	}
+	
 	
 	private class RequestBoxRouteServer extends CyclicBehaviour {
 		
@@ -342,29 +473,77 @@ public class MoverAgent extends Agent {
 		
 		
 		public void action() {
-			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-			ACLMessage msg = myAgent.receive(mt);
-			if (msg != null) {
-				// CFP Message received. Process it				
-				String title = msg.getContent();
-				ACLMessage reply = msg.createReply();
-				goalMessage = msg;
-				goalAgent = msg.getSender();
-				//System.out.println(getName() + " recieved request for finding boxroute");
+			switch(step){
+			case 0:
+				MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+				ACLMessage msg = myAgent.receive(mt);
+				if (msg != null) {
+					// CFP Message received. Process it				
+					String title = msg.getContent();
+					ACLMessage reply = msg.createReply();
+					//System.out.println("Moveragent: " + myAgent.getName() + " recieved: " + title );
+					goalMessage = msg;
+					goalAgent = msg.getSender();
+					//System.out.println(getName() + " recieved request for finding boxroute");
 
-				// Calc route price and propose
-				reply.setPerformative(ACLMessage.CFP);
-				reply.setConversationId("route_req");
-				reply.setContent("loool");
-				calcMoverRoutes(title,msg);
+					// Calc route price and propose
+					//reply.setPerformative(ACLMessage.CFP);
+					//reply.setConversationId("route_req");
+					//reply.setContent("loool");
+					calcMoverRoutes(title,msg);
+					
+					step = 1;
 
-				//myAgent.send(reply);
+					//myAgent.send(reply);
+				}
+				else {
+					block();
+				}
+				break;
+				
+			case 1:
+				mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+				msg = myAgent.receive(mt);
+				if(msg != null){
+					String content = msg.getContent();
+					if(content.length() > 0){
+						queue += content;
+						calcEndPos(content);
+						
+					}
+					step = 0;
+				}
+				else
+					block();
+				break;
 			}
-			else {
-				block();
-			}
+			
 		}
 	}  // End of inner class OfferRequestsServer
+	
+	private void calcEndPos(String route){
+		for(int i = 0; i < route.length(); i++){
+			switch(route.charAt(i)){
+			case 'u':
+			case 'U':
+				endPos[0]--;
+				break;
+			case 'd':
+			case 'D':
+				endPos[0]++;
+				break;
+			case 'l':
+			case 'L':
+				endPos[1]--;
+				break;
+			case 'r':
+			case 'R':
+				endPos[1]++;
+				break;
+
+			}
+		}
+	}
 	
 	// Put agent clean-up operations here
 	protected void takeDown() {

@@ -249,10 +249,13 @@ public class BoxAgent extends Agent {
 		return ret;
 	}
 	
-	String calcRoute(String sender)
+	String calcRoute(String sender, int startPlace_x, int startPlace_y)
 	{
 		String ret;
 		int[] mover = new int[2];
+		mover[0] = startPlace_x;
+		mover[1] = startPlace_y;
+		
 		int[] box = new int[2];
 		int senderID = Integer.parseInt(sender);
 		
@@ -260,16 +263,16 @@ public class BoxAgent extends Agent {
 		int[][] solverMap = new int[map.map_width][map.map_height];
 		boolean foundID = false;
 		
-		for (int i = 0; i < map.map_width; i++)
+		for (int i = 0; i < map.map_width; i++){
 			for (int j = 0; j < map.map_height; j++)
 			{
 				if (map.map[i][j] >= 1000)
 					solverMap[i][j] = 1;
 				else if (map.map[i][j] == senderID)
 				{
-					mover[0] = i;
-					mover[1] = j;
-					solverMap[i][j] = senderID;
+					//mover[0] = i;
+					//mover[1] = j;
+					solverMap[i][j] = 2;
 				}
 				else if(map.map[i][j] >= 100 && map.map[i][j] < 1000){
 					solverMap[i][j] = 100;
@@ -282,16 +285,20 @@ public class BoxAgent extends Agent {
 					box[0] = i;
 					box[1] = j;
 					foundID = true;
+					
 				}
+				//System.out.print(solverMap[i][j] + "\t");
 			}
+		//System.out.println("");
+		}
+		//System.out.println(" ");
 		
 		if(foundID){
-			ret = Astar.calcRoute(map.map, mover[0], mover[1], box[0], box[1]);
+			ret = Astar.calcRoute(solverMap, mover[0], mover[1], box[0], box[1]);
+			
 			int[] goal = findGoal(map.map);
-			
-			//ret+= Astar.calcRoute(map.map, box[0], box[1], goal[0], goal[1]);
-			
-			ret += Astar.calcRouteToGoal(map.map, box[0], box[1], goal);
+						
+			ret += Astar.calcRouteToGoal(solverMap, box[0], box[1], goal);
 						
 			//ret = solve(solverMap,mover);
 			
@@ -339,13 +346,14 @@ public class BoxAgent extends Agent {
 				// CFP Message received. Process it				
 				String title = msg.getContent();
 				ACLMessage reply = msg.createReply();
+				String[] temp = title.split("-");
 
 				// Calc route price and propose
 				reply.setPerformative(ACLMessage.PROPOSE);
 				reply.setConversationId("route_conv");
 				String sender = msg.getSender().getName().substring(10,12);
 				//System.out.println("Found mover agent number:" + sender);
-				reply.setContent(calcRoute(sender));
+				reply.setContent(calcRoute(sender,Integer.parseInt(temp[1]), Integer.parseInt(temp[2])));
 				//System.out.println(myAgent.getName() + " has been requested");
 
 				myAgent.send(reply);
@@ -397,8 +405,11 @@ public class BoxAgent extends Agent {
 
 				reply.setPerformative(ACLMessage.INFORM);
 				reply.setConversationId("route_conv");
+				//System.out.println("Recieved something: " + msg.getContent());
+				String[] temp = msg.getContent().split("-");
+				//System.out.println("Length of recieved something: " + temp.length);
 				String sender = msg.getSender().getName().substring(10,12);
-				reply.setContent(calcRoute(sender));
+				reply.setContent(calcRoute(sender, Integer.parseInt(temp[1]),Integer.parseInt(temp[2])));
 
 				myAgent.send(reply);
 				
