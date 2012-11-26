@@ -47,16 +47,12 @@ public class MoverAgent extends Agent {
 	private ACLMessage goalMessage;
 	private Map map;
 	private boolean findMyself = false;
-	private Integer[] endPos;
+	private Integer[] endPos = new Integer[2];
 	private Integer[] curPos = new Integer[2];
 	// Put agent initializations here
 	protected void setup() {
 		// Printout a welcome message
 		System.out.println("Hallo! BoxAgent " + getAID().getName() + " is running.");
-		
-		endPos = new Integer[2];
-		endPos[0] = 0;
-		endPos[1] = 1;
 
 		// Loading arguments
 		Object[] args = getArguments();
@@ -80,7 +76,7 @@ public class MoverAgent extends Agent {
 			
 			addBehaviour(new MapSubscriber());
 					
-			addBehaviour(new MoveBehaviour(this, 25));
+			addBehaviour(new MoveBehaviour(this, 100));
 						
 			// Find map-agent and subscriber to map
 			addBehaviour(new OneShotBehaviour(this) {
@@ -365,37 +361,40 @@ public class MoverAgent extends Agent {
 		@Override
 		protected void onTick() {
 			if(queue.length() > 0){
-				String nexMove = queue.substring(0,1);
+				char nexMove = queue.charAt(0);
 				
 				int[] temp = {curPos[0], curPos[1]};
 				
 				switch(nexMove) {
-				case "u":
-				case "U":
+				case 'u':
+				case 'U':
 					temp[0]--;
 					break;
 					
-				case "d":
-				case "D":
+				case 'd':
+				case 'D':
 					temp[0]++;
 					break;
 					
-				case "r":
-				case "R":
+				case 'r':
+				case 'R':
 					temp[1]++;
 					break;
 					
-				case "l":
-				case "L":
+				case 'l':
+				case 'L':
 					temp[1]--;
 					break;
-				
+				default:
+					//queue = queue.substring(1);
+					System.out.println("False move..!");
+					break;
 				}
 				
 				if(map.map[temp[1]][temp[0]] >= 10 && map.map[temp[1]][temp[0]] < 100){
 					switch(nexMove) {
-					case "u":
-					case "U":
+					case 'u':
+					case 'U':
 						if(map.map[curPos[1]-1][curPos[0]] == 2 || (map.map[curPos[1]-1][curPos[0]] >= 100 && map.map[curPos[1]-1][curPos[0]] < 1000)) 
 							if(map.map[curPos[1]-1][curPos[0]-1] == 2 || (map.map[curPos[1]-1][curPos[0]-1] >= 100 && map.map[curPos[1]-1][curPos[0]-1] < 1000)){
 								queue = "LUR" + queue.substring(1);
@@ -403,22 +402,22 @@ public class MoverAgent extends Agent {
 						
 						break;
 						
-					case "d":
-					case "D":
+					case 'd':
+					case 'D':
 						if(map.map[curPos[1]+1][curPos[0]] == 2 || (map.map[curPos[1]+1][curPos[0]] >= 100 && map.map[curPos[1]+1][curPos[0]] < 1000)) 
 							if(map.map[curPos[1]+1][curPos[0]+1] == 2 || (map.map[curPos[1]+1][curPos[0]+1] >= 100 && map.map[curPos[1]+1][curPos[0]+1] < 1000)) 
 								queue = "RDL" + queue.substring(1);
 						break;
 						
-					case "r":
-					case "R":
+					case 'r':
+					case 'R':
 						if(map.map[curPos[1]][curPos[0]-1] == 2 || (map.map[curPos[1]][curPos[0]-1] >= 100 && map.map[curPos[1]][curPos[0]-1] < 1000)) 
 							if(map.map[curPos[1]+1][curPos[0]-1] == 2 || (map.map[curPos[1]+1][curPos[0]-1] >= 100 && map.map[curPos[1]+1][curPos[0]-1] < 1000)) 
 								queue = "URD" + queue.substring(1);
 						break;
 						
-					case "l":
-					case "L":
+					case 'l':
+					case 'L':
 						if(map.map[curPos[1]][curPos[0]+1] == 2 || (map.map[curPos[1]][curPos[0]+1] >= 100 && map.map[curPos[1]][curPos[0]+1] < 1000)) 
 							if(map.map[curPos[1]-1][curPos[0]+1] == 2 || (map.map[curPos[1]-1][curPos[0]+1] >= 100 && map.map[curPos[1]-1][curPos[0]+1] < 1000)) 
 								queue = "DLU" + queue.substring(1);
@@ -442,8 +441,6 @@ public class MoverAgent extends Agent {
 	private class RequestBoxRouteServer extends CyclicBehaviour {
 		
 		private MessageTemplate mt; // The template to receive replies
-		private int step = 0;
-
 		
 		public String calcMoverRoutes(String boxTypes, ACLMessage reply){
 			String ret = "";
@@ -473,11 +470,10 @@ public class MoverAgent extends Agent {
 		
 		
 		public void action() {
-			switch(step){
-			case 0:
-				MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-				ACLMessage msg = myAgent.receive(mt);
-				if (msg != null) {
+			MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
+			ACLMessage msg = myAgent.receive(mt);
+			if (msg != null) {
+				if (msg.getConversationId().equals("route_req")) {
 					// CFP Message received. Process it				
 					String title = msg.getContent();
 					ACLMessage reply = msg.createReply();
@@ -485,38 +481,20 @@ public class MoverAgent extends Agent {
 					goalMessage = msg;
 					goalAgent = msg.getSender();
 					//System.out.println(getName() + " recieved request for finding boxroute");
-
-					// Calc route price and propose
-					//reply.setPerformative(ACLMessage.CFP);
-					//reply.setConversationId("route_req");
-					//reply.setContent("loool");
-					calcMoverRoutes(title,msg);
-					
-					step = 1;
-
-					//myAgent.send(reply);
+					calcMoverRoutes(title, reply);
 				}
-				else {
-					block();
-				}
-				break;
-				
-			case 1:
-				mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-				msg = myAgent.receive(mt);
-				if(msg != null){
+				else if(msg.getConversationId().equals("move_req")){
 					String content = msg.getContent();
 					if(content.length() > 0){
 						queue += content;
 						calcEndPos(content);
 						
 					}
-					step = 0;
 				}
-				else
-					block();
-				break;
+				block();
 			}
+			else
+				block();
 			
 		}
 	}  // End of inner class OfferRequestsServer

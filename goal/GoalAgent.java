@@ -83,7 +83,12 @@ public class GoalAgent extends Agent {
 			
 			addBehaviour(new MapSubscriber());
 			
-			addBehaviour(new TickerBehaviour(this, 500) {				
+			addBehaviour(new TickerBehaviour(this, 1000) {				
+				/**
+				 * 
+				 */
+				private static final long serialVersionUID = 1L;
+
 				@Override
 				protected void onTick() {
 					ticks++;
@@ -110,7 +115,7 @@ public class GoalAgent extends Agent {
 					
 					step = 0;
 
-					if(ticks > 20)
+					if(ticks > 5)
 						addBehaviour(new RequestBoxMovingPerformer());
 					
 				}
@@ -294,25 +299,25 @@ public class GoalAgent extends Agent {
 					
 					if(moverAgents.length <= replyCnt) {
 						if(!bestRoute.equals("")){
-							String lastMove = bestRoute.substring(bestRoute.length()-1, bestRoute.length());
+							char lastMove = bestRoute.charAt(bestRoute.length()-1);
 							switch (lastMove) {
-							case "u":
-							case "U":
+							case 'u':
+							case 'U':
 								bestReply += "D";
 								break;
 								
-							case "d":
-							case "D":
+							case 'd':
+							case 'D':
 								bestReply += "U";
 								break;
 								
-							case "r":
-							case "R":
+							case 'r':
+							case 'R':
 								bestReply += "L";
 								break;
 								
-							case "l":
-							case "L":
+							case 'l':
+							case 'L':
 								bestReply += "R";
 								break;
 		
@@ -327,6 +332,7 @@ public class GoalAgent extends Agent {
 							//bestRoute += Astar.calcRoute(map.map, box[0], box[1], goal[0], goal[1]);
 							
 							//Send reply to mover that it has to move
+							moverReply.setConversationId("move_req");
 							template = new DFAgentDescription();
 							moverReply.setContent(bestReply);
 							myAgent.send(moverReply);

@@ -219,9 +219,7 @@ public class MapAgent extends Agent {
 		
 
 	} 
-	
-	
-	
+
 	private int[] findSolver(int[][] map, String mover)
 	{
 		int[] r = new int[2];
@@ -329,7 +327,13 @@ public class MapAgent extends Agent {
 			} catch (StaleProxyException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}	
+			}
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		for (i = 0; i < map.no_of_boxes1; i++)
 		{
@@ -341,6 +345,12 @@ public class MapAgent extends Agent {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		for (i = 0; i < map.no_of_boxes2; i++)
@@ -353,6 +363,12 @@ public class MapAgent extends Agent {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		for (i = 0; i < map.no_of_boxes3; i++)
@@ -365,6 +381,12 @@ public class MapAgent extends Agent {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		for (i = 0; i < map.no_of_boxes4; i++)
@@ -377,6 +399,12 @@ public class MapAgent extends Agent {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}	
+			try {
+				Thread.sleep(10);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		
 		Object[] temp = new Object[1];
