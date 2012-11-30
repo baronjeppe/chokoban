@@ -33,7 +33,7 @@ public class Viewer implements MouseListener {
 		  }
 		}
 
-		frame.setSize((1+6+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
+		frame.setSize((1+map.length)*FIGURE_SIZES-16,(1+map[0].length)*FIGURE_SIZES+6);
 		
 		Color c = new Color(0,0,0);
 		frame.getContentPane().setBackground(c);		
