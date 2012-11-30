@@ -76,7 +76,7 @@ public class MoverAgent extends Agent {
 			
 			addBehaviour(new MapSubscriber());
 					
-			addBehaviour(new MoveBehaviour(this, 100));
+			addBehaviour(new MoveBehaviour(this, 400));
 						
 			// Find map-agent and subscriber to map
 			addBehaviour(new OneShotBehaviour(this) {
