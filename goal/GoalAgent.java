@@ -284,10 +284,8 @@ public class GoalAgent extends Agent {
 									  /* given string will be split by the argument delimiter provided. */
 									  temp = str.split(delimiter);
 									  
-										Random random1 = new Random();
-										int tempran = random1.nextInt(3);
 									
-									if(bestRoute.equals("") || tempran == 2){
+									if(bestRoute.equals("") || bestRoute.length() > (temp[1]).length()+1){
 										bestRoute = temp[0] + "-" + temp[1];
 										moverWithBestRoute = reply1.getSender();
 										boxWithBestRoute = temp[2];
