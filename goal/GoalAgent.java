@@ -83,7 +83,7 @@ public class GoalAgent extends Agent {
 			
 			addBehaviour(new MapSubscriber());
 			
-			addBehaviour(new TickerBehaviour(this, 1000) {				
+			addBehaviour(new TickerBehaviour(this, 250) {				
 				/**
 				 * 
 				 */

@@ -31,6 +31,7 @@ import java.io.InputStreamReader;
 import java.io.Serializable;
 import java.util.ArrayList;
 
+import timer.Timer;
 import tools.Astar;
 import tools.Route;
 import jade.core.AID;
@@ -54,6 +55,9 @@ public class MapAgent extends Agent {
 	private String map_path;
 	private ArrayList<AID> map_subscribers;
 	private Viewer viewer;
+	private int boxes_in_goal = 0;
+	private int moves = 0;
+	timer.Timer timer = new Timer();
 
 	// Put agent initializations here
 	protected void setup() {
@@ -94,6 +98,8 @@ public class MapAgent extends Agent {
 			
 			viewer.drawMap(map.map);
 			
+			timer.restart();
+			
 		}
 		else {
 			// Make the agent terminate
@@ -106,14 +112,19 @@ public class MapAgent extends Agent {
 	{
 		int moverID = Integer.parseInt(mover);
 		int[] solverposition = findSolver(map.map, mover);
+		
+		moves++;
 
 		for (int i = 0; i<route.length(); i++)
 		{
 			if (route.charAt(i) == 'u' || route.charAt(i) == 'U')
 			{
-
 				if (map.map[solverposition[0]][solverposition[1]-1] >= 1000){
 						map.map[solverposition[0]][solverposition[1]-1] = moverID + 40;
+						boxes_in_goal++;
+						System.out.println("Boxes: " + boxes_in_goal + "Time: " + timer.timeSinceStartInSeconds());
+						System.out.println("Moves per box: " + moves/boxes_in_goal);
+						System.out.println("Boxes per minute: " + boxes_in_goal/(timer.timeSinceStartInSeconds()/60));
 				}
 				else{
 					if (map.map[solverposition[0]][solverposition[1]] >= 50){
@@ -134,6 +145,12 @@ public class MapAgent extends Agent {
 			{
 				if (map.map[solverposition[0]][solverposition[1]+1] >= 1000){
 						map.map[solverposition[0]][solverposition[1]+1] = moverID + 40;
+						boxes_in_goal++;
+						System.out.println("Boxes: " + boxes_in_goal + "Time: " + timer.timeSinceStartInSeconds());
+						System.out.println("Moves per box: " + moves/boxes_in_goal);
+						System.out.println("Boxes per minute: " + boxes_in_goal/(timer.timeSinceStartInSeconds()/60));
+
+
 				}
 				else{
 					if (map.map[solverposition[0]][solverposition[1]] >= 50){
@@ -153,11 +170,16 @@ public class MapAgent extends Agent {
 			{
 				if (map.map[solverposition[0]-1][solverposition[1]] >= 1000){
 						map.map[solverposition[0]-1][solverposition[1]] = moverID + 40;
+						boxes_in_goal++;
+						System.out.println("Boxes: " + boxes_in_goal + "Time: " + timer.timeSinceStartInSeconds());
+						System.out.println("Moves per box: " + moves/boxes_in_goal);
+						System.out.println("Boxes per minute: " + boxes_in_goal/(timer.timeSinceStartInSeconds()/60));
+
+
 				}
 				else{
 					if (map.map[solverposition[0]][solverposition[1]] >= 50){
 						map.map[solverposition[0]-1][solverposition[1]] = moverID + 40;
-
 					}
 					else
 						map.map[solverposition[0]-1][solverposition[1]] = moverID;
@@ -172,6 +194,12 @@ public class MapAgent extends Agent {
 			{
 				if (map.map[solverposition[0]+1][solverposition[1]] >= 1000){
 						map.map[solverposition[0]+1][solverposition[1]] = moverID + 40;
+						boxes_in_goal++;
+						System.out.println("Boxes: " + boxes_in_goal + "Time: " + timer.timeSinceStartInSeconds());
+						System.out.println("Moves per box: " + moves/boxes_in_goal);
+						System.out.println("Boxes per minute: " + boxes_in_goal/(timer.timeSinceStartInSeconds()/60));
+
+
 				}
 				else{
 					if (map.map[solverposition[0]][solverposition[1]] >= 50){
