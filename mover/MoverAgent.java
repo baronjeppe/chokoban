@@ -23,6 +23,8 @@ Boston, MA  02111-1307, USA.
 
 package mover;
 
+import java.util.Random;
+
 import map.Map;
 import jade.core.AID;
 import jade.core.Agent;
@@ -245,7 +247,9 @@ public class MoverAgent extends Agent {
 						if (reply.getPerformative() == ACLMessage.PROPOSE && !reply.getContent().equals("-")) {
 							// This is an offer 
 							int price = reply.getContent().length();
-							if (boxWithBestRoute == null || price < bestPrice) {
+							Random random = new Random();
+							int temp = random.nextInt(3);
+							if (boxWithBestRoute == null || temp == 2) {
 								// This is the best offer at present
 								bestPrice = price;
 								bestRoute = reply.getContent();
@@ -257,6 +261,7 @@ public class MoverAgent extends Agent {
 						if (repliesCnt >= askedBoxes) {
 							ACLMessage order = null;
 							// We received all replies
+					
 							if(bestRoute != null){
 								MessageTemplate mt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
 								order = new ACLMessage(ACLMessage.CFP);

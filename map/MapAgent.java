@@ -198,8 +198,6 @@ public class MapAgent extends Agent {
 						System.out.println("Boxes: " + boxes_in_goal + "Time: " + timer.timeSinceStartInSeconds());
 						System.out.println("Moves per box: " + moves/boxes_in_goal);
 						System.out.println("Boxes per minute: " + boxes_in_goal/(timer.timeSinceStartInSeconds()/60));
-
-
 				}
 				else{
 					if (map.map[solverposition[0]][solverposition[1]] >= 50){

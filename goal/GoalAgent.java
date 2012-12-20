@@ -83,7 +83,7 @@ public class GoalAgent extends Agent {
 			
 			addBehaviour(new MapSubscriber());
 			
-			addBehaviour(new TickerBehaviour(this, 250) {				
+			addBehaviour(new TickerBehaviour(this, 1500) {				
 				/**
 				 * 
 				 */
@@ -283,8 +283,11 @@ public class GoalAgent extends Agent {
 									  String delimiter = "-";
 									  /* given string will be split by the argument delimiter provided. */
 									  temp = str.split(delimiter);
+									  
+										Random random1 = new Random();
+										int tempran = random1.nextInt(3);
 									
-									if(bestRoute.equals("") || bestRoute.length() > (temp[0]+temp[1]).length()+1){
+									if(bestRoute.equals("") || tempran == 2){
 										bestRoute = temp[0] + "-" + temp[1];
 										moverWithBestRoute = reply1.getSender();
 										boxWithBestRoute = temp[2];
